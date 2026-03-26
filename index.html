@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LabSync v3 · 연구실 통합 관리</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+:root{
+  --bg:#0b0d12;--bg2:#111520;--bg3:#161b28;--bg4:#1c2235;
+  --border:#1e2436;--border2:#2a3150;
+  --text:#dce4f0;--text2:#7a8aaa;--text3:#3a4460;
+  --prof:#4f8ef7;--prof-g:rgba(79,142,247,.12);
+  --s1:#34d399;--s1-g:rgba(52,211,153,.12);
+  --s2:#fbbf24;--s2-g:rgba(251,191,36,.12);
+  --s3:#60a5fa;--s3-g:rgba(96,165,250,.12);
+  --meet:#a78bfa;--meet-g:rgba(167,139,250,.12);
+  --admin:#f87171;--admin-g:rgba(248,113,113,.12);
+  --ai:#22d3ee;--ai-g:rgba(34,211,238,.12);
+  --ok:#34d399;--warn:#fbbf24;--err:#f87171;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+/* LOGIN */
+#LS{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+.lw{width:400px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:44px 36px;}
+.lw h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.lw p{font-size:13px;color:var(--text2);margin-bottom:22px;}
+.fl{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;font-family:'IBM Plex Mono',monospace;}
+.fi{width:100%;padding:10px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;font-family:'Noto Sans KR',sans-serif;transition:border .2s;margin-bottom:13px;}
+.fi:focus{border-color:var(--prof);}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,#4f8ef7,#7c6af7);border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-login:hover{opacity:.88;}
+.lerr{color:var(--err);font-size:12px;margin-top:9px;text-align:center;min-height:16px;}
+.lw-foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;text-align:center;}
+.lw-reset{cursor:pointer;text-decoration:underline;}
+details summary{cursor:pointer;font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;user-select:none;margin-bottom:4px;}
+.apik-row{display:flex;gap:6px;align-items:center;margin-top:7px;}
+.apik-in{flex:1;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none;}
+.apik-btn{padding:7px 11px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.apik-st{font-size:11px;margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+/* LAYOUT */
+#app{display:none;min-height:100vh;}
+.sb{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;overflow-y:auto;}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-logo-ic{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#4f8ef7,#a78bfa);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;}
+.sb-logo-tx{font-weight:700;font-size:14px;}
+.sb-logo-vr{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;}
+.nsec{padding:12px 14px 4px;font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;}
+.ni:hover{background:var(--bg3);}
+.ni.on{background:var(--bg3);border-left-color:var(--prof);}
+.ni .dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.ni:hover .dot,.ni.on .dot{background:var(--prof);}
+.ni.cs1.on,.ni.cs1.on .dot{border-left-color:var(--s1)!important;} .ni.cs1.on .dot{background:var(--s1)!important;}
+.ni.cs2.on{border-left-color:var(--s2)!important;} .ni.cs2.on .dot{background:var(--s2)!important;}
+.ni.cs3.on{border-left-color:var(--s3)!important;} .ni.cs3.on .dot{background:var(--s3)!important;}
+.ni.cm.on{border-left-color:var(--meet)!important;} .ni.cm.on .dot{background:var(--meet)!important;}
+.ni.ca.on{border-left-color:var(--admin)!important;} .ni.ca.on .dot{background:var(--admin)!important;}
+.sb-bot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;}
+.upill{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--bg3);border-radius:8px;}
+.uav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.uname{font-size:12px;font-weight:500;}
+.urole{font-size:10px;color:var(--text2);}
+.sb-out{margin-top:7px;width:100%;padding:6px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;}
+.sb-out:hover{background:var(--bg3);color:var(--text);}
+.main{margin-left:220px;min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:rgba(11,13,18,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
+.tb-title{font-size:15px;font-weight:600;}
+.nb-btn{position:relative;width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.nb-btn:hover{background:var(--bg4);}
+.nb-badge{position:absolute;top:-3px;right:-3px;width:15px;height:15px;border-radius:50%;background:var(--err);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;}
+.content{padding:24px;}
+/* NOTIF PANEL */
+.np{position:fixed;right:0;top:52px;bottom:0;width:300px;background:var(--bg2);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column;}
+.np.open{transform:translateX(0);}
+.np-hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.np-list{flex:1;overflow-y:auto;padding:10px;}
+.np-item{padding:10px;border-radius:7px;background:var(--bg3);margin-bottom:7px;border-left:3px solid transparent;}
+.np-item.u{border-left-color:var(--prof);}
+/* COMMON */
+.ph{margin-bottom:20px;}
+.ph h1{font-size:21px;font-weight:700;}
+.ph p{font-size:13px;color:var(--text2);margin-top:3px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:18px;}
+.card+.card{margin-top:14px;}
+.ct{font-size:13px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;gap:7px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;}
+.sv{font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.sl{font-size:11px;color:var(--text2);margin-top:2px;}
+.sd{font-size:10px;margin-top:3px;}
+.sd.up{color:var(--ok);}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:'IBM Plex Mono',monospace;}
+.bp{background:var(--prof-g);color:var(--prof);}
+.bs1{background:var(--s1-g);color:var(--s1);}
+.bs2{background:var(--s2-g);color:var(--s2);}
+.bm{background:var(--meet-g);color:var(--meet);}
+.ba{background:var(--admin-g);color:var(--admin);}
+.bai{background:var(--ai-g);color:var(--ai);}
+.bok{background:rgba(52,211,153,.1);color:var(--ok);}
+.bwn{background:rgba(251,191,36,.1);color:var(--warn);}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;background:var(--bg4);color:var(--text2);margin-right:3px;margin-bottom:3px;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:'Noto Sans KR',sans-serif;transition:opacity .15s;}
+.btn:hover{opacity:.82;}
+.btn-p{background:var(--prof);color:#fff;}
+.btn-g{background:var(--ok);color:#0b0d12;}
+.btn-v{background:var(--meet);color:#fff;}
+.btn-r{background:var(--err);color:#fff;}
+.btn-o{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-o:hover{color:var(--text);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+.fg{margin-bottom:12px;}
+.fl2{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;}
+input[type=text],input[type=password],input[type=number],input[type=date],textarea,select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;transition:border .15s;}
+input:focus,textarea:focus,select:focus{border-color:var(--prof);}
+textarea{resize:vertical;min-height:80px;}
+.pbar-w{background:var(--bg4);border-radius:3px;height:5px;overflow:hidden;}
+.pbar{height:100%;border-radius:3px;transition:width .6s;}
+.tl{position:relative;padding-left:18px;}
+.tl::before{content:'';position:absolute;left:5px;top:5px;bottom:5px;width:1px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-dot{position:absolute;left:-18px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--border2);border:2px solid var(--bg2);}
+.tl-dot.on{background:var(--prof);}
+.tl-d{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;}
+.tl-t{font-size:13px;font-weight:500;}
+.tl-s{font-size:12px;color:var(--text2);}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:9px 11px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;}
+td{padding:9px 11px;font-size:12px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+.ai-box{background:var(--ai-g);border:1px solid rgba(34,211,238,.2);border-radius:9px;padding:14px;}
+.ai-hd{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.ai-lbl{font-size:10px;color:var(--ai);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+.ai-body{font-size:13px;color:var(--text2);line-height:1.75;}
+.sp{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--ai);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldots::after{content:'·';animation:ld 1.2s infinite;}
+@keyframes ld{0%{content:'·'}33%{content:'··'}66%{content:'···'}100%{content:'·'}}
+.uz{border:2px dashed var(--border2);border-radius:9px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;}
+.uz:hover,.uz.drag{border-color:var(--s1);background:var(--s1-g);}
+.fchip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;font-size:11px;margin-right:6px;margin-bottom:6px;}
+.fc-del{cursor:pointer;color:var(--text3);}
+.fc-del:hover{color:var(--err);}
+.formula{background:var(--bg4);border:1px solid var(--border2);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ai);line-height:1.8;margin:8px 0;}
+.fb-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.poc-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:16px;margin-bottom:11px;border-left:3px solid var(--admin);}
+.rec-btn{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.rec-btn.idle{background:var(--err);}
+.rec-btn.rec{background:var(--err);animation:prec 1.5s infinite;}
+@keyframes prec{0%{box-shadow:0 0 0 0 rgba(248,113,113,.6)}70%{box-shadow:0 0 0 16px rgba(248,113,113,0)}100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}}
+.waveform{display:flex;align-items:center;gap:3px;height:28px;justify-content:center;}
+.wbar{width:3px;background:var(--meet);border-radius:2px;animation:wv 1s ease-in-out infinite;}
+@keyframes wv{0%,100%{height:4px}50%{height:24px}}
+.bc{display:flex;flex-direction:column;gap:7px;}
+.bc-row{display:flex;align-items:center;gap:9px;}
+.bc-lbl{width:60px;font-size:10px;color:var(--text2);text-align:right;flex-shrink:0;font-family:'IBM Plex Mono',monospace;}
+.bc-w{flex:1;background:var(--bg4);border-radius:3px;height:7px;overflow:hidden;}
+.bc-b{height:100%;border-radius:3px;}
+.bc-v{width:36px;font-size:10px;color:var(--text2);font-family:'IBM Plex Mono',monospace;}
+/* NEW FEATURES */
+.new-upd{color:#ff4444!important;font-weight:700;}
+.new-badge{display:inline-block;padding:1px 7px;border-radius:3px;background:rgba(255,68,68,.15);color:#ff4444;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid rgba(255,68,68,.3);margin-left:6px;}
+.upd-card{background:rgba(255,68,68,.06);border:1px solid rgba(255,68,68,.2);border-radius:9px;padding:14px;margin-bottom:10px;border-left:3px solid #ff4444;}
+.pri-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:7px;margin-bottom:7px;border:1px solid var(--border);}
+.pri-row.isnew{border-color:rgba(255,68,68,.3);background:rgba(255,68,68,.05);}
+.pri-num{width:24px;height:24px;border-radius:50%;background:var(--prof);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.pri-row.isnew .pri-num{background:#ff4444;}
+.ts-hd{display:flex;border-bottom:2px solid var(--border);margin-bottom:18px;}
+.ts-btn{padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:'Noto Sans KR',sans-serif;}
+.ts-btn:hover{color:var(--text);}
+.ts-btn.on{color:var(--s1);border-bottom-color:var(--s1);}
+.tc{display:none;}
+.tc.on{display:block;}
+.dtc{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.dtc-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .15s;}
+.dtc-hd:hover{background:var(--bg3);}
+.dtc-body{padding:14px;border-top:1px solid var(--border);display:none;}
+.dtc-body.open{display:block;}
+.fmt-badge{display:inline-block;padding:2px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:4px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text2);margin-right:4px;margin-bottom:3px;}
+.diff-new{background:rgba(255,68,68,.12);color:#ff4444;font-weight:700;padding:0 3px;border-radius:2px;}
+.diff-same{color:var(--text2);}
+.alert-card{border-left:3px solid var(--warn);background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:10px;}
+.alert-card.u{border-left-color:var(--err);}
+/* GALLERY */
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.mc{border-radius:10px;padding:14px 12px;cursor:pointer;transition:all .2s;border:1px solid var(--border);text-align:center;position:relative;}
+.mc:hover{transform:translateY(-2px);}
+.mc.on{box-shadow:0 0 0 2px var(--prof);}
+.mc-cnt{position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;}
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.pt{border:1px solid var(--border);border-radius:9px;padding:12px;cursor:pointer;transition:all .2s;background:var(--bg3);}
+.pt:hover{border-color:var(--prof);}
+.pt-img{width:100%;height:90px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:28px;}
+.pt-ttl{font-size:11px;font-weight:600;line-height:1.4;margin-bottom:3px;}
+.pt-meta{font-size:10px;color:var(--text2);}
+.rbar{height:4px;border-radius:3px;background:linear-gradient(90deg,var(--ok),var(--prof));transition:width .6s;}
+.rnk1{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+.rnk2{background:linear-gradient(135deg,#6b7280,#9ca3af);color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+.rnkn{background:var(--bg4);color:var(--text2);border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+.rv-step{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;}
+.rv-s{flex:1;padding:8px;text-align:center;font-size:11px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border-right:1px solid var(--border);}
+.rv-s:last-child{border-right:none;}
+.rv-s.done{background:var(--s1-g);color:var(--ok);}
+.rv-s.active{background:var(--prof-g);color:var(--prof);font-weight:700;}
+.rv-s.pending{color:var(--text3);}
+.ab-cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.ab-orig{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:13px;font-size:12px;line-height:1.75;}
+.ab-ai{background:var(--ai-g);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:13px;font-size:12px;line-height:1.75;}
+.gl-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px;margin-top:14px;}
+.pr-rec{background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(79,142,247,.08));border:1px solid rgba(34,211,238,.2);border-radius:11px;padding:18px;}
+.ts-hd2{display:flex;border-bottom:2px solid var(--border);margin-bottom:18px;}
+.ts2-btn{padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:'Noto Sans KR',sans-serif;}
+.ts2-btn:hover{color:var(--text);}
+.ts2-btn.on{color:var(--ai);border-bottom-color:var(--ai);}
+</style>
+</head>
+<body>
+<!-- LOGIN -->
+<div id="LS">
+  <div class="lw">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:30px;">
+      <div style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#4f8ef7,#a78bfa);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:16px;color:#fff;">LS</div>
+      <div><div style="font-size:18px;font-weight:700;">LabSync</div><div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;">RESEARCH SYSTEM v3</div></div>
+    </div>
+    <h2>시스템 로그인</h2>
+    <p>내부 사용자만 접근 가능합니다.</p>
+    <label class="fl">아이디 (ID)</label>
+    <input class="fi" id="lId" type="text" placeholder="사용자 ID" autocomplete="username">
+    <label class="fl">비밀번호</label>
+    <input class="fi" id="lPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="lerr" id="lErr"></div>
+    <div style="margin-top:12px;">
+      <details>
+        <summary>🔑 AI 기능 설정 (Anthropic API Key)</summary>
+        <div class="apik-row">
+          <input class="apik-in" id="aKey" type="password" placeholder="sk-ant-...">
+          <button class="apik-btn" onclick="saveApiKey()">저장</button>
+        </div>
+        <div class="apik-st" id="aKeySt"></div>
+      </details>
+    </div>
+    <div class="lw-foot">
+      INTERNAL ACCESS ONLY · LabSync v3.0<br>
+      <span class="lw-reset" onclick="resetAccts()">계정 초기화 (로그인 안될 때)</span>
+    </div>
+  </div>
+</div>
+<!-- APP -->
+<div id="app">
+  <div class="sb" id="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-ic">LS</div>
+      <div><div class="sb-logo-tx">LabSync</div><div class="sb-logo-vr">v3.0 · INTERNAL</div></div>
+    </div>
+    <div id="nav"></div>
+    <div class="sb-bot">
+      <div class="upill">
+        <div class="uav" id="uav"></div>
+        <div><div class="uname" id="uname"></div><div class="urole" id="urole"></div></div>
+      </div>
+      <button class="sb-out" onclick="doLogout()">🚪 로그아웃</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tbTitle">대시보드</div>
+      <div class="nb-btn" onclick="toggleNP()">🔔<div class="nb-badge" id="nbadge">0</div></div>
+    </div>
+    <div class="content" id="mc"></div>
+  </div>
+  <div class="np" id="np">
+    <div class="np-hd"><h3 style="font-size:13px;font-weight:600;">🔔 알림</h3><button class="btn btn-o btn-sm" onclick="toggleNP()">닫기</button></div>
+    <div class="np-list" id="npList"></div>
+  </div>
+</div>
+<script>
+'use strict';
+// ════════════════════════════════════════
+// ACCOUNTS
+// ════════════════════════════════════════
+const AV = 'v3.0';
+const DA = [
+  {id:'hanleem', pw:'23625',  name:'Prof. Lee', role:'professor', label:'교수', color:'#4f8ef7'},
+  {id:'stud1',   pw:'236250', name:'학생1',      role:'student1',  label:'학생 1',  color:'#34d399'},
+  {id:'stud2',   pw:'236250', name:'학생2',      role:'student2',  label:'학생 2',  color:'#fbbf24'},
+  {id:'stud3',   pw:'236250', name:'학생3',      role:'student3',  label:'학생 3',  color:'#60a5fa'},
+  {id:'meeting', pw:'236250', name:'회의실',     role:'meeting',   label:'Meeting', color:'#a78bfa'},
+  {id:'admin',   pw:'236250', name:'관리자',     role:'admin',     label:'Admin',   color:'#f87171'},
+];
+function getAccts(){
+  if(localStorage.getItem('ls_ver')!==AV){
+    localStorage.setItem('ls_accts',JSON.stringify(DA));
+    localStorage.setItem('ls_ver',AV);
+  }
+  try{return JSON.parse(localStorage.getItem('ls_accts'))||DA;}catch(e){return DA;}
+}
+function saveAccts(a){localStorage.setItem('ls_accts',JSON.stringify(a));localStorage.setItem('ls_ver',AV);}
+function findAcct(id,pw){return getAccts().find(a=>a.id===id&&a.pw===pw);}
+function resetAccts(){
+  if(!confirm('계정 초기화: hanleem/23625로 돌아갑니다.')) return;
+  localStorage.removeItem('ls_accts');
+  localStorage.removeItem('ls_ver');
+  alert('초기화 완료!\n아이디: hanleem\n비밀번호: 23625');
+}
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let CU = null;
+let recState = 'idle', recTimer = null, recSec = 0;
+let API_KEY = localStorage.getItem('ls_apikey')||'';
+let notifOpen = false;
+
+// ── 저장소
+let paperLib = [];
+try{paperLib=JSON.parse(localStorage.getItem('ls_plib')||'[]');}catch(e){}
+function savePLib(){localStorage.setItem('ls_plib',JSON.stringify(paperLib.map(p=>({...p,pdfB64:undefined}))));}
+
+let studentData = [];
+try{studentData=JSON.parse(localStorage.getItem('ls_sdata')||'[]');}catch(e){}
+function saveStudentData(){
+  const slim=studentData.map(d=>({...d,files:(d.files||[]).map(f=>({name:f.name||f,size:f.size||0,ft:f.ft||''}))}));
+  localStorage.setItem('ls_sdata',JSON.stringify(slim));
+}
+
+let expMethods = [];
+try{expMethods=JSON.parse(localStorage.getItem('ls_emeth')||'[]');}catch(e){}
+function saveExpMethods(){localStorage.setItem('ls_emeth',JSON.stringify(expMethods));}
+
+let profAlerts = [];
+try{profAlerts=JSON.parse(localStorage.getItem('ls_palerts')||'[]');}catch(e){}
+function saveProfAlerts(){localStorage.setItem('ls_palerts',JSON.stringify(profAlerts));}
+function addProfAlert(title,sub){
+  profAlerts.unshift({id:'al'+Date.now(),title,sub,time:new Date().toLocaleString('ko-KR'),unread:true});
+  saveProfAlerts();
+  refreshBadge();
+}
+function refreshBadge(){
+  const cnt=profAlerts.filter(a=>a.unread).length;
+  const el=document.getElementById('nbadge');
+  if(el){el.textContent=cnt;el.style.display=cnt>0?'flex':'none';}
+}
+
+// ── 탭 상태
+let uploadTab = 'method';
+let selMeasType = 'ALL';
+let selAnalysisType = 'theory_update';
+let ppFile = null;
+let pdfQueue = [];
+let dataFiles = {};
+let dataInterp = {};
+let curPaperId = null;
+let revStep = 0;
+let methodFile = null;
+let lastTheoryAnalysis = '';
+
+// ── 데이터 정의
+const DB = {
+  theory:{
+    title:'리튬 이온 배터리 양극재 결정 구조 최적화 연구',
+    concept:'층상 산화물 계열(NCM811) 양극재의 결정 구조 제어를 통한 전기화학적 성능 향상. Jahn-Teller 왜곡 억제 및 Li+/Ni2+ 혼합 최소화가 핵심.',
+    theory:'NCM811에서 Li+ 이온 이동성은 Nernst-Planck 방정식:\nJ_Li = -D_Li(∂C/∂x) - (z_Li·F·D_Li/RT)·C·(∂φ/∂x)\nD_Li=Li확산계수, C=농도, φ=전기포텐셜',
+    params:[
+      {name:'결정질화도',unit:'%',target:'≥95',cur:'89.2',trend:'↑'},
+      {name:'c/a ratio',unit:'-',target:'4.93~4.97',cur:'4.94',trend:'→'},
+      {name:'Li/Ni 혼합도',unit:'%',target:'≤2',cur:'3.1',trend:'↓'},
+      {name:'방전용량',unit:'mAh/g',target:'≥200',cur:'187',trend:'↑'},
+    ],
+    ver:'v1.3',updated:'2026-03-24',
+    papers:[
+      {title:'Cation Ordering in NCM Cathodes',journal:'Nat. Energy',year:2025,doi:'10.1038/s41560-025-xxxx',tags:['XRD','결정구조']},
+      {title:'Li/Ni Disorder Effects',journal:'ACS Energy Lett.',year:2025,doi:'10.1021/acsenergylett.5b',tags:['전기화학','NCM']},
+    ]
+  },
+  exps:[
+    {id:'exp001',student:'stud1',type:'XRD',title:'소성온도별 XRD 분석',date:'2026-03-20',status:'분석완료'},
+    {id:'exp002',student:'stud2',type:'EIS',title:'전해질 농도별 EIS 측정',date:'2026-03-22',status:'해석중'},
+    {id:'exp003',student:'stud1',type:'CV',title:'사이클 성능 CV 분석',date:'2026-03-25',status:'업로드완료'},
+  ],
+  feedbacks:[
+    {id:'fb001',from:'Prof. Lee',target:'exp001',status:'review',comment:'XRD 피크에서 (003)/(104) 비율을 정확히 계산해주세요. Rietveld refinement 결과도 첨부해주세요.',date:'2026-03-21',replies:[
+      {from:'stud1',comment:'FullProf로 진행 중입니다. 내일 결과 보고드리겠습니다.',date:'2026-03-21'}
+    ]},
+    {id:'fb002',from:'Prof. Lee',target:'exp002',status:'open',comment:'EIS에서 Rct 값이 예상보다 높습니다. 전해질 주입량을 확인해주세요.',date:'2026-03-23',replies:[]},
+  ],
+  meetings:[{
+    id:'m001',title:'주간 미팅 #12',date:'2026-03-19',dur:'52분',
+    participants:['Prof. Lee','stud1','stud2'],
+    transcript:'교수: 이번 주 XRD 결과 어떻습니까?\n학생1: 850도에서 (003)/(104) = 1.38 측정됐습니다.\n교수: 목표 1.4 이상인데 추가 최적화가 필요합니다.',
+    summary:'1. XRD I(003)/(104)=1.38, 목표 미달\n2. 875°C 추가 실험 결정\n3. EIS 측정 완료 예정',
+    cps:'# CPS #12\n## Current State\n- 결정질화도 89.2% (목표 95%)\n## Problem\n- 소성온도 최적화 필요\n## Solution\n- 875°C, 900°C 추가 소성 실험',
+    status:'완료'
+  }],
+  poc:[{id:'poc001',title:'Ti/Mg 이중 도핑 POC',status:'검토중',date:'2026-03-25',content:'Ti 1mol%, Mg 0.5mol% 동시 도핑 후 XRD/EIS 비교 실험 제안.'}],
+  theoryUpdates:JSON.parse(localStorage.getItem('ls_tupdates')||'[]'),
+  methodPriorities:[
+    {rank:1,task:'소성온도 875°C 실험',reason:'I(003)/(104) 목표 미달',status:'진행중',isNew:false},
+    {rank:2,task:'Rietveld refinement 분석',reason:'Li/Ni 혼합도 정밀 측정',status:'대기',isNew:false},
+    {rank:3,task:'EIS 재측정',reason:'Rct 개선 확인',status:'대기',isNew:false},
+  ],
+  weeklyPaper:null
+};
+
+const MEAS = [
+  {id:'XRD',   label:'XRD',      icon:'🔬',color:'#4f8ef7',desc:'결정 구조'},
+  {id:'XPS',   label:'XPS',      icon:'⚡',color:'#34d399',desc:'표면 화학'},
+  {id:'TEM',   label:'TEM-SAED', icon:'🔭',color:'#fbbf24',desc:'미세 구조'},
+  {id:'XANES', label:'XANES',    icon:'☢️',color:'#a78bfa',desc:'전자 구조'},
+  {id:'EXAFS', label:'EXAFS',    icon:'📡',color:'#f87171',desc:'국소 구조'},
+  {id:'RAMAN', label:'RAMAN',    icon:'💡',color:'#22d3ee',desc:'진동 스펙트럼'},
+  {id:'LSV',   label:'LSV',      icon:'📈',color:'#fb923c',desc:'선형 소인 전압'},
+  {id:'CV',    label:'CV',       icon:'🔄',color:'#e879f9',desc:'순환 전압'},
+  {id:'STAB',  label:'Stability',icon:'⏱️',color:'#4ade80',desc:'안정성'},
+];
+const DATA_TYPES = [
+  {id:'XRD',  label:'XRD',      icon:'🔬',color:'#4f8ef7',fmt:'.opju · .xlsx · .csv · .raw',guide:'2θ 10-80° · 스텝 0.02° · (003)(104) 피크 필수 · Rietveld 파일 첨부'},
+  {id:'XPS',  label:'XPS',      icon:'⚡',color:'#34d399',fmt:'.xlsx · .vms · .spe',guide:'Survey + 고분해능(Ni2p Co2p Mn2p O1s C1s) · C1s=284.8eV 보정 필수'},
+  {id:'TEM',  label:'TEM-SAED', icon:'🔭',color:'#fbbf24',fmt:'.tif · .jpg · .dm3',guide:'HRTEM + SAED 패턴 · 스케일바 필수 · d-spacing 기재'},
+  {id:'XANES',label:'XANES',    icon:'☢️',color:'#a78bfa',fmt:'.dat · .xlsx · .xdi',guide:'흡수단 E0 위치 · 표준 시료 함께 · 배경 제거 완료'},
+  {id:'EXAFS',label:'EXAFS',    icon:'📡',color:'#f87171',fmt:'.dat · .xlsx · .xdi',guide:'k-공간 + R-공간 · k² weighting · Athena 파일 권장'},
+  {id:'RAMAN',label:'RAMAN',    icon:'💡',color:'#22d3ee',fmt:'.xlsx · .txt · .spc',guide:'A1g Eg 피크 위치 · 여기 파장 명시 · 배경 제거 전후'},
+  {id:'LSV',  label:'LSV',      icon:'📈',color:'#fb923c',fmt:'.xlsx · .mpt · .txt',guide:'스캔 속도(mV/s) · iR 보정 여부 · Tafel 기울기'},
+  {id:'CV',   label:'CV',       icon:'🔄',color:'#e879f9',fmt:'.xlsx · .mpt · .txt',guide:'스캔 속도 · 전위 범위 · 산화/환원 Ep 기재'},
+  {id:'STAB', label:'Stability',icon:'⏱️',color:'#4ade80',fmt:'.xlsx · .txt · .csv',guide:'총 시간(h) · 전류밀도 · 전위 유지율(%)'},
+];
+const NOTIFS = [
+  {title:'새 논문 업데이트',sub:'교수가 이론을 업데이트했습니다.',time:'10분 전',unread:true},
+  {title:'XRD 데이터 업로드',sub:'stud1이 새 데이터를 업로드했습니다.',time:'1시간 전',unread:true},
+  {title:'회의록 생성 완료',sub:'CPS #12 문서가 생성되었습니다.',time:'3시간 전',unread:true},
+  {title:'POC 검토 요청',sub:'관리자가 POC 검토를 요청했습니다.',time:'어제',unread:false},
+];
+
+// ════════════════════════════════════════
+// API
+// ════════════════════════════════════════
+function saveApiKey(){
+  const k=document.getElementById('aKey').value.trim();
+  const st=document.getElementById('aKeySt');
+  if(!k){st.innerHTML='<span style="color:var(--err)">입력해주세요.</span>';return;}
+  if(!k.startsWith('sk-ant-')){st.innerHTML='<span style="color:var(--warn)">sk-ant- 로 시작해야 합니다.</span>';return;}
+  localStorage.setItem('ls_apikey',k);
+  API_KEY=k;
+  st.innerHTML='<span style="color:var(--ok)">✓ 저장됨 ('+k.slice(0,12)+'...)</span>';
+  document.getElementById('aKey').value='';
+}
+function isProfessor(){return CU&&CU.role==='professor';}
+
+async function callClaude(sys,user,tokens){
+  if(!isProfessor()) throw new Error('PROF_ONLY');
+  const key=API_KEY||localStorage.getItem('ls_apikey')||'';
+  if(!key) throw new Error('NO_KEY');
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:tokens||1200,system:sys,messages:[{role:'user',content:user}]})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+r.status);}
+  const d=await r.json();
+  return d.content.find(c=>c.type==='text').text;
+}
+
+async function callClaudePDF(sys,user,pdfs,tokens){
+  if(!isProfessor()) throw new Error('PROF_ONLY');
+  const key=API_KEY||localStorage.getItem('ls_apikey')||'';
+  if(!key) throw new Error('NO_KEY');
+  const content=[];
+  for(const b64 of pdfs) content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
+  content.push({type:'text',text:user});
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:tokens||2500,system:sys,messages:[{role:'user',content}]})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+r.status);}
+  const d=await r.json();
+  return d.content.find(c=>c.type==='text').text;
+}
+
+function f2b64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=()=>rej(new Error('파일 읽기 실패'));
+    r.readAsDataURL(file);
+  });
+}
+
+function showAiErr(elId,e){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  if(e.message==='PROF_ONLY') el.innerHTML='<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;padding:14px;font-size:12px;color:var(--err);">🔒 교수(hanleem) 계정에서만 사용 가능한 기능입니다.</div>';
+  else if(e.message==='NO_KEY') el.innerHTML='<div class="ai-body" style="color:var(--warn);">⚠️ API Key가 없습니다. 로그인 화면 하단 🔑 AI 기능 설정에서 입력해주세요.<br><a href="https://console.anthropic.com" target="_blank" style="color:var(--ai);">console.anthropic.com</a></div>';
+  else el.innerHTML='<div class="ai-body" style="color:var(--err);">❌ 오류: '+e.message+'</div>';
+}
+
+function fmtAI(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>')
+    .replace(/## (.+?)(<br>|$)/g,'<br><strong style="color:var(--ai);font-size:13px;">$1</strong><br>')
+    .replace(/### (.+?)(<br>|$)/g,'<br><strong style="color:var(--prof);font-size:12px;">$1</strong><br>');
+}
+
+function showClaudeLink(elId, promptText, title){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  const short=promptText.slice(0,150).replace(/\n/g,' ')+'...';
+  const enc=encodeURIComponent(promptText);
+  el.innerHTML='<div class="ai-box">'
+    +'<div class="ai-hd"><span class="ai-lbl">💬 CLAUDE.AI 안내</span></div>'
+    +'<div style="font-size:13px;font-weight:500;margin-bottom:6px;">'+title+'</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">학생·회의·관리자는 Claude.ai를 직접 사용합니다.</div>'
+    +'<div style="background:var(--bg4);border-radius:6px;padding:9px;font-size:11px;color:var(--text2);margin-bottom:10px;font-family:IBM Plex Mono,monospace;">'+short+'</div>'
+    +'<div style="display:flex;gap:7px;">'
+    +'<button class="btn btn-p btn-sm" data-enc="'+enc+'" onclick="openCAI(this.dataset.enc)">🚀 Claude.ai 열기</button>'
+    +'<button class="btn btn-o btn-sm" data-enc="'+enc+'" onclick="copyP(this.dataset.enc)">📋 프롬프트 복사</button>'
+    +'</div></div>';
+}
+function openCAI(enc){
+  const p=decodeURIComponent(enc);
+  navigator.clipboard.writeText(p).catch(()=>{});
+  window.open('https://claude.ai','_blank');
+  alert('📋 프롬프트가 복사되었습니다!\n\nClaude.ai 탭에서 Ctrl+V로 붙여넣으세요.');
+}
+function copyP(enc){
+  const p=decodeURIComponent(enc);
+  navigator.clipboard.writeText(p).then(()=>alert('✅ 복사 완료!\n\nclaude.ai에서 붙여넣으세요.')).catch(()=>alert('복사 실패'));
+}
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function doLogin(){
+  const id=document.getElementById('lId').value.trim();
+  const pw=document.getElementById('lPw').value.trim();
+  const err=document.getElementById('lErr');
+  if(!id||!pw){err.textContent='아이디와 비밀번호를 입력하세요.';return;}
+  const accts=getAccts();
+  const byId=accts.find(a=>a.id===id);
+  if(!byId){err.textContent='등록되지 않은 아이디: '+id;return;}
+  if(byId.pw!==pw){err.textContent='비밀번호가 올바르지 않습니다.';return;}
+  err.textContent='';
+  CU={id:byId.id,name:byId.name,role:byId.role,label:byId.label,color:byId.color};
+  document.getElementById('lId').value='';
+  document.getElementById('lPw').value='';
+  document.getElementById('LS').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+function doLogout(){
+  CU=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('LS').style.display='flex';
+}
+
+// ════════════════════════════════════════
+// APP INIT
+// ════════════════════════════════════════
+const NAVS={
+  professor:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'p-theory',label:'연구 이론 편집',icon:'📚'},
+    {id:'p-tview',label:'이론 보기/PDF',icon:'📋'},
+    {id:'p-targets',label:'목표값 관리',icon:'🎯'},
+    {id:'p-papers',label:'논문 갤러리',icon:'📄'},
+    {id:'p-pdf',label:'PDF 논문 분석',icon:'🔍'},
+    {id:'p-method',label:'실험 방법',icon:'🧫'},
+    {id:'p-versions',label:'버전 이력',icon:'🕒'},
+    {id:'p-alerts',label:'학생 데이터 알림',icon:'🔔'},
+    {id:'feedback',label:'피드백',icon:'💬'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ],
+  student1:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'p-tview',label:'연구 이론 보기',icon:'📋'},
+    {id:'s-papers',label:'논문 갤러리',icon:'📄'},
+    {id:'s-upload',label:'실험기록 & 데이터',icon:'📤'},
+    {id:'s-analysis',label:'데이터 분석',icon:'📈'},
+    {id:'s-guide',label:'분석 가이드',icon:'📋'},
+    {id:'s-weekly',label:'주간 논문 추천',icon:'📰'},
+    {id:'feedback',label:'피드백',icon:'💬'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ],
+  student2:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'p-tview',label:'연구 이론 보기',icon:'📋'},
+    {id:'s-papers',label:'논문 갤러리',icon:'📄'},
+    {id:'s-upload',label:'실험기록 & 데이터',icon:'📤'},
+    {id:'s-analysis',label:'데이터 분석',icon:'📈'},
+    {id:'s-guide',label:'분석 가이드',icon:'📋'},
+    {id:'s-weekly',label:'주간 논문 추천',icon:'📰'},
+    {id:'feedback',label:'피드백',icon:'💬'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ],
+  student3:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'p-tview',label:'연구 이론 보기',icon:'📋'},
+    {id:'s-papers',label:'논문 갤러리',icon:'📄'},
+    {id:'s-upload',label:'실험기록 & 데이터',icon:'📤'},
+    {id:'s-analysis',label:'데이터 분석',icon:'📈'},
+    {id:'s-guide',label:'분석 가이드',icon:'📋'},
+    {id:'s-weekly',label:'주간 논문 추천',icon:'📰'},
+    {id:'feedback',label:'피드백',icon:'💬'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ],
+  meeting:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'m-rec',label:'회의 녹음',icon:'🎙️'},
+    {id:'m-stt',label:'STT 변환',icon:'📝'},
+    {id:'m-summary',label:'AI 요약',icon:'🤖'},
+    {id:'m-docs',label:'문서 생성',icon:'📃'},
+    {id:'m-history',label:'회의 이력',icon:'🗂️'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ],
+  admin:[
+    {id:'dash',label:'대시보드',icon:'📊'},
+    {id:'a-monitor',label:'프로젝트 현황',icon:'📡'},
+    {id:'a-activity',label:'활동 모니터링',icon:'👁️'},
+    {id:'a-poc',label:'POC 관리',icon:'💡'},
+    {id:'a-accounts',label:'계정 관리',icon:'👥'},
+    {id:'feedback',label:'전체 피드백',icon:'💬'},
+    {id:'settings',label:'계정 설정',icon:'⚙️'},
+  ]
+};
+const TITLES={
+  'dash':'대시보드','p-theory':'연구 이론 편집','p-tview':'이론 보기 & PDF',
+  'p-targets':'목표값 관리','p-papers':'논문 갤러리','p-pdf':'PDF 논문 분석',
+  'p-method':'실험 방법 관리','p-versions':'버전 이력','p-alerts':'학생 데이터 알림',
+  'p-paper-detail':'논문 정리본',
+  's-upload':'실험기록 & 데이터 업로드','s-analysis':'데이터 분석',
+  's-guide':'분석 가이드','s-weekly':'주간 논문 추천','s-papers':'논문 갤러리',
+  'feedback':'피드백 & 협업',
+  'm-rec':'회의 녹음','m-stt':'STT 변환','m-summary':'AI 요약',
+  'm-docs':'문서 생성 (CPS/PRD)','m-history':'회의 이력',
+  'a-monitor':'프로젝트 현황','a-activity':'활동 모니터링',
+  'a-poc':'POC 관리','a-accounts':'계정 관리','settings':'계정 설정'
+};
+const RC={professor:'',student1:'cs1',student2:'cs2',student3:'cs3',meeting:'cm',admin:'ca'};
+
+function initApp(){
+  const nav=NAVS[CU.role]||NAVS.student1;
+  const rc=RC[CU.role]||'';
+  let h='<div class="nsec">MENU</div>';
+  nav.forEach(m=>{
+    h+=`<div class="ni ${rc}" id="ni-${m.id}" onclick="go('${m.id}')"><div class="dot"></div><span>${m.icon} ${m.label}</span></div>`;
+  });
+  document.getElementById('nav').innerHTML=h;
+  document.getElementById('uname').textContent=CU.name;
+  document.getElementById('urole').textContent=CU.label;
+  const av=document.getElementById('uav');
+  av.textContent=CU.name[0];
+  av.style.background=CU.color;
+  av.style.color='#fff';
+  // 알림 패널
+  const nl=document.getElementById('npList');
+  nl.innerHTML=NOTIFS.map(n=>`<div class="np-item ${n.unread?'u':''}"><div style="font-size:12px;font-weight:500;margin-bottom:2px;">${n.title}</div><div style="font-size:11px;color:var(--text2);">${n.sub}</div><div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-top:3px;">${n.time}</div></div>`).join('');
+  const cnt=profAlerts.filter(a=>a.unread).length+NOTIFS.filter(n=>n.unread).length;
+  const badge=document.getElementById('nbadge');
+  badge.textContent=cnt;
+  badge.style.display=cnt>0?'flex':'none';
+  go('dash');
+}
+
+function toggleNP(){
+  notifOpen=!notifOpen;
+  document.getElementById('np').classList.toggle('open',notifOpen);
+}
+
+function go(id){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.toggle('on',n.id==='ni-'+id));
+  document.getElementById('tbTitle').textContent=TITLES[id]||id;
+  const pages={
+    'dash':pgDash,'p-theory':pgTheory,'p-tview':pgTView,'p-targets':pgTargets,
+    'p-papers':pgPapers,'p-pdf':pgPDF,'p-method':pgMethod,'p-versions':pgVersions,
+    'p-paper-detail':pgPaperDetail,'p-alerts':pgAlerts,'s-papers':pgSPapers,
+    's-upload':pgUpload,'s-analysis':pgAnalysis,'s-guide':pgGuide,'s-weekly':pgWeekly,
+    'feedback':pgFeedback,
+    'm-rec':pgRec,'m-stt':pgSTT,'m-summary':pgSummary,'m-docs':pgDocs,'m-history':pgHistory,
+    'a-monitor':pgMonitor,'a-activity':pgActivity,'a-poc':pgPOC,'a-accounts':pgAccounts,
+    'settings':pgSettings
+  };
+  const fn=pages[id];
+  const mc=document.getElementById('mc');
+  if(fn){
+    mc.innerHTML='';
+    fn(mc);
+  }else{
+    mc.innerHTML=`<div class="ph"><h1 class="ph h1">${id}</h1></div><div class="card"><p style="color:var(--text2)">준비 중</p></div>`;
+  }
+  if(id==='m-rec') initRec();
+}
+
+// ════════════════════════════════════════
+// PAGE FUNCTIONS (innerHTML 직접 설정 방식)
+// ════════════════════════════════════════
+function pgDash(mc){
+  const rc={professor:'var(--prof)',student1:'var(--s1)',student2:'var(--s2)',student3:'var(--s3)',meeting:'var(--meet)',admin:'var(--admin)'}[CU.role]||'var(--prof)';
+  const el=document.createElement('div');
+  el.innerHTML=`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">안녕하세요, ${CU.name} 님 👋</h1>
+<p style="font-size:13px;color:var(--text2);margin-top:3px;">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'})}</p></div>
+<div class="g3" style="margin-bottom:14px;">
+  <div class="stat"><div class="sv" style="color:${rc}">89.2%</div><div class="sl">현재 결정질화도</div><div class="sd up">↑ 목표 95%</div></div>
+  <div class="stat"><div class="sv" style="color:var(--ok)">3</div><div class="sl">이번 주 실험</div><div class="sd up">↑ 전주 +1</div></div>
+  <div class="stat"><div class="sv" style="color:var(--warn)">2</div><div class="sl">미처리 피드백</div><div class="sd" style="color:var(--warn)">⚠ 처리 필요</div></div>
+</div>
+<div class="g2">
+  <div class="card"><div class="ct">📊 진행률</div>
+    ${[['결정질화도',89,'var(--prof)'],['Li/Ni 억제',60,'var(--s2)'],['전기화학 최적화',45,'var(--meet)']].map(([l,p,c])=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px;"><span>${l}</span><span style="font-family:IBM Plex Mono,monospace;">${p}%</span></div><div class="pbar-w"><div class="pbar" style="width:${p}%;background:${c}"></div></div></div>`).join('')}
+  </div>
+  <div class="card"><div class="ct">🕒 최근 활동</div>
+    <div class="tl">
+      ${[['CV 데이터 업로드','2026-03-25','stud1',true],['이론 v1.3 업데이트','2026-03-24','Prof. Lee',false],['EIS 업로드','2026-03-22','stud2',false]].map(([t,d,s,on])=>`<div class="tl-item"><div class="tl-dot ${on?'on':''}"></div><div class="tl-d">${d}</div><div class="tl-t">${t}</div><div class="tl-s">${s}</div></div>`).join('')}
+    </div>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;"><div class="ct">🎯 목표값 현황</div>
+  <div class="tw"><table>
+    <tr><th>파라미터</th><th>목표</th><th>현재</th><th>추세</th><th>상태</th></tr>
+    ${DB.theory.params.map(p=>`<tr><td><strong>${p.name}</strong></td><td style="font-family:IBM Plex Mono,monospace;">${p.target} ${p.unit}</td><td style="font-family:IBM Plex Mono,monospace;color:var(--ai);">${p.cur} ${p.unit}</td><td>${p.trend}</td><td><span class="badge ${p.trend==='↑'?'bok':'bwn'}">${p.trend==='↑'?'개선중':'모니터링'}</span></td></tr>`).join('')}
+  </table></div>
+</div>`;
+  mc.appendChild(el);
+}
+
+// ── PROF: THEORY
+function pgTheory(mc){
+  const updH=DB.theoryUpdates.length?`<div class="card" style="margin-bottom:14px;border-color:rgba(255,68,68,.3);">
+    <div class="ct">🔴 AI 분석 변경사항 <span class="new-badge">NEW</span></div>
+    ${DB.theoryUpdates.slice().map(u=>`<div class="upd-card"><div style="font-size:10px;color:#ff4444;font-family:IBM Plex Mono,monospace;margin-bottom:3px;">${u.date} · ${u.ver}</div><div class="new-upd" style="font-size:13px;">${u.summary}</div></div>`).join('')}
+  </div>`:'';
+  mc.innerHTML=updH+`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">📚 연구 이론 편집</h1>
+<p style="font-size:13px;color:var(--text2);">현재 버전: <strong>${DB.theory.ver}</strong> · <a href="#" onclick="go('p-tview')" style="color:var(--ai);font-size:12px;">📋 보기/PDF →</a></p></div>
+<div class="card">
+  <div class="ct">📌 기본 정보</div>
+  <div class="fg"><label class="fl2">연구 제목</label><input type="text" id="t-title" value="${DB.theory.title}"></div>
+  <div class="fg"><label class="fl2">연구 컨셉</label><textarea id="t-concept" rows="3">${DB.theory.concept}</textarea></div>
+</div>
+<div class="card">
+  <div class="ct">🔢 이론 & 수식</div>
+  <div class="fg"><label class="fl2">이론 설명</label><textarea id="t-theory" rows="5">${DB.theory.theory}</textarea></div>
+  <div class="formula">J_Li = -D_Li(∂C/∂x) - (z_Li·F·D_Li/RT)·C·(∂φ/∂x)</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-p" onclick="saveTheory()">💾 저장 & 버전 업</button>
+    <button class="btn btn-o" onclick="aiTheory()">🤖 AI 이론 분석 + 변경사항 요약</button>
+    <button class="btn btn-o" onclick="go('p-tview')">📋 보기/PDF</button>
+  </div>
+</div>
+<div class="card" id="ai-th-box" style="display:none;">
+  <div class="ai-box"><div class="ai-hd"><span class="sp" id="ai-th-sp"></span><span class="ai-lbl">AI THEORY ANALYSIS</span></div>
+  <div class="ai-body" id="ai-th-txt">분석 중<span class="ldots"></span></div></div>
+  <div style="margin-top:10px;display:flex;gap:7px;">
+    <button class="btn btn-p btn-sm" onclick="applyTheoryUpdate()">🔴 변경사항 반영</button>
+    <button class="btn btn-o btn-sm" onclick="genExperFile()">📁 exper 파일 생성</button>
+  </div>
+</div>`;
+}
+
+function saveTheory(){
+  DB.theory.title=document.getElementById('t-title').value;
+  DB.theory.concept=document.getElementById('t-concept').value;
+  DB.theory.theory=document.getElementById('t-theory').value;
+  DB.theory.ver='v1.4'; DB.theory.updated=new Date().toISOString().split('T')[0];
+  alert('✅ 저장 완료! 버전 v1.4로 업데이트되었습니다.');
+}
+async function aiTheory(){
+  const box=document.getElementById('ai-th-box');
+  box.style.display='block';
+  document.getElementById('ai-th-sp').style.display='inline-block';
+  document.getElementById('ai-th-txt').innerHTML='분석 중<span class="ldots"></span>';
+  try{
+    const t=await callClaude(
+      '신소재/전기화학 전문 연구 조언가. 이론 분석, 핵심 포인트, 개선 방향을 한국어로 제시. [PART 1: 분석] [PART 2: 변경사항 요약 (● 로 시작)] [PART 3: 실험우선순위 JSON]',
+      `컨셉: ${document.getElementById('t-concept').value}\n\n이론: ${document.getElementById('t-theory').value}`,
+      1800
+    );
+    lastTheoryAnalysis=t;
+    document.getElementById('ai-th-sp').style.display='none';
+    document.getElementById('ai-th-txt').innerHTML=fmtAI(t).replace(/● (.+?)(<br>|$)/g,'<div style="color:#ff4444;font-weight:600;margin:3px 0;">🔴 $1</div>');
+  }catch(e){
+    document.getElementById('ai-th-sp').style.display='none';
+    showAiErr('ai-th-txt',e);
+  }
+}
+function saveTUpdates(){
+  localStorage.setItem('ls_tupdates', JSON.stringify(DB.theoryUpdates));
+}
+function applyTheoryUpdate(){
+  if(!lastTheoryAnalysis){alert('먼저 AI 분석을 실행해주세요.');return;}
+  const bullets=lastTheoryAnalysis.split('\n').filter(l=>l.trim().startsWith('●')).map(l=>l.replace('●','').trim());
+  const summary=bullets.length?bullets.join(' | '):lastTheoryAnalysis.slice(0,200);
+  const nv='v'+(parseFloat(DB.theory.ver.replace('v',''))+0.1).toFixed(1);
+  DB.theory.ver=nv; DB.theory.updated=new Date().toISOString().split('T')[0];
+  DB.theoryUpdates.push({date:DB.theory.updated,ver:nv,summary});
+  saveTUpdates();
+  alert('✅ 변경사항 반영! 버전: '+nv+'\n\n이론 보기/PDF 페이지에서 전체 이력을 확인하세요.');
+  go('p-theory');
+}
+function genExperFile(){
+  if(!lastTheoryAnalysis){alert('먼저 AI 분석을 실행해주세요.');return;}
+  let priorities=[];
+  const m=lastTheoryAnalysis.match(/```json[\s\S]+?```/);
+  if(m){try{priorities=JSON.parse(m[0].replace(/```json|```/g,'').trim());}catch(e){}}
+  if(!priorities.length) priorities=[{rank:1,task:'AI 분석 기반 실험',reason:'이론 업데이트 반영',status:'대기'}];
+  const data={version:DB.theory.ver,generatedAt:new Date().toISOString(),experimentPriorities:priorities.map(p=>({...p,isNew:true}))};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='exper_'+DB.theory.ver+'_'+DB.theory.updated+'.json';
+  a.click(); URL.revokeObjectURL(url);
+  alert('✅ exper 파일 다운로드!\n실험 방법 페이지에서 업로드하면 우선순위가 업데이트됩니다.');
+}
+
+// ── PROF: THEORY VIEW
+function pgTView(mc){
+  const updH=DB.theoryUpdates.length?`<div class="card" style="border-color:rgba(255,68,68,.3);background:rgba(255,68,68,.04);margin-bottom:14px;">
+    <div class="ct">🔴 AI 분석 변경사항 이력 <span style="font-size:11px;font-weight:400;color:var(--text3);">(총 ${DB.theoryUpdates.length}건 · 브라우저 저장)</span></div>
+    ${DB.theoryUpdates.slice().reverse().map((u,i)=>`<div class="upd-card" style="position:relative;">
+      <div style="font-size:10px;color:#ff4444;font-family:IBM Plex Mono,monospace;margin-bottom:3px;">${u.date} · ${u.ver}</div>
+      <div class="new-upd" style="font-size:13px;">${u.summary}</div>
+      ${isProfessor() ? `<button onclick="delTUpdate(${DB.theoryUpdates.length-1-i})" style="position:absolute;top:8px;right:8px;background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:11px;" title="삭제">×</button>` : ''}
+    </div>`).join('')}
+    ${isProfessor() ? '<div style="margin-top:10px;display:flex;gap:7px;"><button class="btn btn-o btn-sm" onclick="clearAllTUpdates()">🗑️ 전체 삭제</button></div>' : ''}
+  </div>`:'';
+  const profOnly = isProfessor();
+  mc.innerHTML=`
+<div style="display:flex;gap:8px;margin-bottom:16px;">
+  <button class="btn btn-p" onclick="dlTheoryPDF()">📥 PDF 다운로드</button>
+  <button class="btn btn-o" onclick="dlTheoryTXT()">📄 텍스트</button>
+  ${profOnly ? '<button class="btn btn-o" onclick="go(\'p-theory\')">✏️ 편집 (교수 전용)</button>' : ''}
+</div>
+${updH}
+<div class="card" id="theory-print">
+  <div style="font-size:18px;font-weight:700;margin-bottom:6px;">${DB.theory.title}</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <span style="font-family:IBM Plex Mono,monospace;font-size:11px;padding:2px 8px;border-radius:4px;background:var(--prof-g);color:var(--prof);">${DB.theory.ver}</span>
+    <span style="font-size:11px;color:var(--text3);">최종 수정: ${DB.theory.updated}</span>
+  </div>
+  <div style="background:var(--bg3);border-radius:9px;padding:14px;margin-bottom:12px;">
+    <div style="font-size:10px;color:var(--ai);font-family:IBM Plex Mono,monospace;margin-bottom:8px;">RESEARCH CONCEPT</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8;">${DB.theory.concept}</div>
+  </div>
+  <div style="background:var(--bg3);border-radius:9px;padding:14px;margin-bottom:12px;">
+    <div style="font-size:10px;color:var(--ai);font-family:IBM Plex Mono,monospace;margin-bottom:8px;">THEORY & EQUATIONS</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8;">${DB.theory.theory.replace(/\n/g,'<br>')}</div>
+    <div class="formula" style="margin-top:10px;">J_Li = -D_Li(∂C/∂x) - (z_Li·F·D_Li/RT)·C·(∂φ/∂x)</div>
+  </div>
+  <div style="background:var(--bg3);border-radius:9px;padding:14px;margin-bottom:12px;">
+    <div style="font-size:10px;color:var(--ai);font-family:IBM Plex Mono,monospace;margin-bottom:8px;">TARGET PARAMETERS</div>
+    <div class="tw"><table><tr><th>파라미터</th><th>단위</th><th>목표</th><th>현재</th><th>추세</th></tr>
+    ${DB.theory.params.map(p=>`<tr><td><strong>${p.name}</strong></td><td style="font-family:IBM Plex Mono,monospace;">${p.unit}</td><td style="font-family:IBM Plex Mono,monospace;color:var(--prof);">${p.target}</td><td style="font-family:IBM Plex Mono,monospace;color:var(--ai);">${p.cur}</td><td>${p.trend}</td></tr>`).join('')}
+    </table></div>
+  </div>
+</div>`;
+}
+function delTUpdate(idx){
+  if(!confirm('이 변경사항을 삭제하시겠습니까?')) return;
+  DB.theoryUpdates.splice(idx, 1);
+  saveTUpdates();
+  go('p-tview');
+}
+function clearAllTUpdates(){
+  if(!confirm('모든 변경사항 이력을 삭제하시겠습니까?')) return;
+  DB.theoryUpdates = [];
+  saveTUpdates();
+  go('p-tview');
+}
+function dlTheoryPDF(){
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>LabSync 이론서</title><style>body{font-family:'Noto Sans KR',sans-serif;color:#111;padding:40px;max-width:800px;margin:0 auto;}h1{font-size:20px;font-weight:700;}.s{background:#f7f9fc;border-radius:8px;border-left:4px solid #4f8ef7;padding:14px;margin-bottom:18px;}.st{font-size:10px;color:#4f8ef7;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700;}.f{background:#1a1a2e;color:#22d3ee;font-family:monospace;padding:10px;border-radius:5px;font-size:12px;margin-top:8px;}table{width:100%;border-collapse:collapse;}th,td{padding:7px;border:1px solid #ddd;font-size:12px;}th{background:#f0f4ff;}</style></head><body>
+<h1>${DB.theory.title}</h1><p style="color:#666;font-size:12px;">버전: ${DB.theory.ver} · ${DB.theory.updated}</p>
+${DB.theoryUpdates.length?`<div style="background:#fff5f5;border:1px solid #ffcccc;border-left:4px solid #ff4444;padding:12px;border-radius:6px;margin:14px 0;"><div style="font-size:10px;color:#ff4444;font-weight:700;margin-bottom:5px;">AI 분석 변경사항</div>${DB.theoryUpdates.slice().reverse().map(u=>`<div style="font-size:12px;color:#ff4444;font-weight:600;">${u.date} (${u.ver}): ${u.summary}</div>`).join('')}</div>`:''}
+<div class="s"><div class="st">Research Concept</div>${DB.theory.concept}</div>
+<div class="s"><div class="st">Theory & Equations</div>${DB.theory.theory.replace(/\n/g,'<br>')}<div class="f">J_Li = -D_Li(∂C/∂x) - (z_Li·F·D_Li/RT)·C·(∂φ/∂x)</div></div>
+<div class="s"><div class="st">Target Parameters</div><table><tr><th>파라미터</th><th>목표</th><th>현재</th></tr>${DB.theory.params.map(p=>`<tr><td>${p.name}</td><td>${p.target} ${p.unit}</td><td>${p.cur} ${p.unit}</td></tr>`).join('')}</table></div>
+<scr`+'ipt>window.onload=function(){window.print();}<'+`/script></body></html>`;
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+  else alert('팝업 차단됨. 브라우저 팝업 허용 후 다시 시도해주세요.');
+}
+function dlTheoryTXT(){
+  const lines=['=== LabSync 연구 이론서 ===','제목: '+DB.theory.title,'버전: '+DB.theory.ver,'','[컨셉]',DB.theory.concept,'','[이론]',DB.theory.theory,'','[목표]',...DB.theory.params.map(p=>p.name+': 목표 '+p.target+p.unit+' / 현재 '+p.cur+p.unit)];
+  if(DB.theoryUpdates.length){lines.push('','[변경사항]');DB.theoryUpdates.forEach(u=>lines.push(u.date+' ('+u.ver+'): '+u.summary));}
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='theory_'+DB.theory.ver+'.txt';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── PROF: TARGETS
+function pgTargets(mc){
+  let h=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">🎯 목표값 관리</h1></div>`;
+  DB.theory.params.forEach((p,i)=>{
+    h+=`<div class="stat" style="margin-bottom:11px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+        <div><div style="font-size:14px;font-weight:600;">${p.name}</div><span class="badge bp">${p.unit}</span></div>
+        <button class="btn btn-o btn-sm" onclick="editParam(${i})">수정</button>
+      </div>
+      <div style="display:flex;gap:20px;">
+        <div><div style="font-size:10px;color:var(--text3);">목표</div><div style="font-family:IBM Plex Mono,monospace;font-size:15px;color:var(--prof);">${p.target}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);">현재</div><div style="font-family:IBM Plex Mono,monospace;font-size:15px;color:var(--ai);">${p.cur}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);">추세</div><div style="font-size:18px;">${p.trend}</div></div>
+      </div>
+    </div>`;
+  });
+  h+=`<button class="btn btn-o" style="margin-top:8px;" onclick="addParam()">+ 새 파라미터</button>
+  <div class="card" id="param-edit" style="display:none;margin-top:14px;">
+    <div class="ct">✏️ 수정</div>
+    <div class="g2">
+      <div class="fg"><label class="fl2">파라미터명</label><input type="text" id="pe-name"></div>
+      <div class="fg"><label class="fl2">단위</label><input type="text" id="pe-unit"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="fl2">목표값</label><input type="text" id="pe-target"></div>
+      <div class="fg"><label class="fl2">현재값</label><input type="text" id="pe-cur"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-p" onclick="saveParam()">저장</button>
+      <button class="btn btn-o" onclick="document.getElementById('param-edit').style.display='none'">취소</button>
+    </div>
+  </div>`;
+  mc.innerHTML=h;
+}
+let editParamIdx=-1;
+function editParam(i){
+  editParamIdx=i;
+  const p=DB.theory.params[i];
+  document.getElementById('pe-name').value=p.name;
+  document.getElementById('pe-unit').value=p.unit;
+  document.getElementById('pe-target').value=p.target;
+  document.getElementById('pe-cur').value=p.cur;
+  document.getElementById('param-edit').style.display='block';
+}
+function saveParam(){
+  if(editParamIdx<0)return;
+  DB.theory.params[editParamIdx]={name:document.getElementById('pe-name').value,unit:document.getElementById('pe-unit').value,target:document.getElementById('pe-target').value,cur:document.getElementById('pe-cur').value,trend:'→'};
+  document.getElementById('param-edit').style.display='none';
+  go('p-targets');
+}
+function addParam(){
+  DB.theory.params.push({name:'새 파라미터',unit:'',target:'',cur:'',trend:'→'});
+  go('p-targets');
+  setTimeout(()=>editParam(DB.theory.params.length-1),50);
+}
+
+// ── STUDENT: PAPERS (읽기 전용)
+function pgSPapers(mc){
+  const sorted=[...paperLib].sort((a,b)=>(b.relevanceScore||0)-(a.relevanceScore||0));
+  const cnt=id=>id==='ALL'?paperLib.length:paperLib.filter(p=>(p.measureTypes||[]).includes(id)).length;
+  const filtered=selMeasType==='ALL'?sorted:sorted.filter(p=>(p.measureTypes||[]).includes(selMeasType));
+
+  let h=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📄 논문 갤러리</h1>
+  <p style="font-size:13px;color:var(--text2);margin-top:3px;">교수 등록 논문 · 연관성 순위 정렬 · 읽기 전용</p></div>
+  <div class="card" style="margin-bottom:14px;"><div class="ct">🔬 측정 유형별 분류</div>
+  <div class="mg">
+    <div class="mc ${selMeasType==='ALL'?'on':''}" style="background:var(--bg3);" onclick="sMeas('ALL')">
+      <div style="font-size:20px;margin-bottom:4px;">📚</div>
+      <div style="font-size:12px;font-weight:700;">전체</div>
+      <div class="mc-cnt" style="background:var(--prof);">${paperLib.length}</div>
+    </div>
+    ${MEAS.map(m=>{
+      const c2=cnt(m.id);
+      return `<div class="mc ${selMeasType===m.id?'on':''}" style="background:${m.color}18;border-color:${m.color}44;" onclick="sMeas('${m.id}')">
+        <div style="font-size:20px;margin-bottom:4px;">${m.icon}</div>
+        <div style="font-size:12px;font-weight:700;color:${m.color};">${m.label}</div>
+        <div style="font-size:10px;opacity:.7;">${m.desc}</div>
+        ${c2?`<div class="mc-cnt" style="background:${m.color};">${c2}</div>`:''}
+      </div>`;
+    }).join('')}
+  </div></div>
+  <div class="card">`;
+
+  if(filtered.length===0){
+    h+=`<div style="text-align:center;padding:36px 20px;">
+      <div style="font-size:36px;">📭</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:12px;">교수님이 아직 논문을 등록하지 않았습니다.</div>
+    </div>`;
+  } else {
+    h+=`<div class="ct">📑 논문 목록 (${filtered.length}편${selMeasType!=='ALL'?' · '+selMeasType:''})</div>
+    <div class="pt-grid">`;
+    filtered.forEach((p,i)=>{
+      const rank=i+1;
+      const rc2=rank===1?'rnk1':rank===2?'rnk2':'rnkn';
+      const sc=p.relevanceScore||0;
+      h+=`<div class="pt" onclick="viewSPaper('${p.id}')">
+        <div class="pt-img">${(MEAS.find(m=>m.id===(p.measureTypes||[])[0])||{icon:'📄'}).icon}</div>
+        <div class="pt-ttl"><span class="${rc2}" style="margin-right:4px;">${rank<=3?rank:'#'+rank}</span>${p.title.slice(0,48)+(p.title.length>48?'...':'')}</div>
+        <div class="pt-meta">${p.journal} (${p.year})</div>
+        <div style="margin-top:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:2px;">
+            <span>연관성</span><span style="color:var(--prof);">${sc}점</span>
+          </div>
+          <div style="background:var(--bg4);border-radius:3px;height:4px;overflow:hidden;">
+            <div class="rbar" style="width:${Math.min(sc,100)}%"></div>
+          </div>
+        </div>
+        <div style="margin-top:4px;font-size:10px;color:${p.status==='완료'?'var(--ok)':p.status==='진행중'?'var(--warn)':'var(--text3)'};">
+          ${p.status==='완료'?'✅ 정리완료':p.status==='진행중'?'⏳ 검토중':'⬜ 미정리'}
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  mc.innerHTML=h;
+}
+function sMeas(id){selMeasType=id;go('s-papers');}
+
+function viewSPaper(id){
+  const paper=paperLib.find(p=>p.id===id);
+  if(!paper) return;
+  const mc=document.getElementById('mc');
+  const mt=MEAS.find(m=>m.id===(paper.measureTypes||[])[0])||{color:'var(--prof)',icon:'📄'};
+  let h=`<div style="display:flex;gap:10px;margin-bottom:16px;">
+    <button class="btn btn-o btn-sm" onclick="go('s-papers')">← 갤러리</button>
+    <span style="font-size:13px;color:var(--text2);line-height:32px;">논문 정리본 (읽기 전용)</span>
+  </div>
+  <div style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:11px;padding:18px;margin-bottom:14px;">
+    <div style="display:flex;gap:12px;">
+      <div style="width:42px;height:42px;border-radius:9px;background:${mt.color}22;border:1px solid ${mt.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${mt.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${paper.title}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">${paper.journal} (${paper.year})${paper.doi?` · <a href="https://doi.org/${paper.doi}" target="_blank" style="color:var(--ai);">DOI</a>`:''}</div>
+        <div>${(paper.measureTypes||[]).map(id=>{const m2=MEAS.find(x=>x.id===id)||{label:id,color:'var(--ai)'};return `<span style="font-size:10px;padding:2px 8px;border-radius:12px;background:${m2.color}20;color:${m2.color};border:1px solid ${m2.color}44;margin-right:4px;">${m2.label}</span>`;}).join('')}${paper.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+          <span style="font-size:11px;color:var(--text3);">연관성</span>
+          <div style="width:100px;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden;"><div class="rbar" style="width:${Math.min(paper.relevanceScore||0,100)}%"></div></div>
+          <span style="font-family:IBM Plex Mono,monospace;font-size:12px;color:var(--prof);">${paper.relevanceScore||0}점</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 검토 단계 표시
+  h+=`<div class="card" style="margin-bottom:14px;"><div class="rv-step">
+    ${[{id:'abstract',label:'Abstract',icon:'📝'},{id:'findings',label:'주요 발견',icon:'🔍'},{id:'synthesis',label:'합성 방법',icon:'⚗️'},{id:'methods',label:'측정 방법',icon:'📊'}].map(s=>{
+      const done=s.id==='abstract'?paper.abstract_approved:!!paper[s.id];
+      return `<div class="rv-s ${done?'done':'pending'}">${s.icon} ${s.label}${done?' ✓':''}</div>`;
+    }).join('')}
+  </div></div>`;
+
+  // Abstract
+  if(paper.abstract_orig||paper.abstract_summary){
+    h+=`<div class="card" style="margin-bottom:12px;"><div class="ct">📝 Abstract</div>`;
+    if(paper.abstract_orig&&paper.abstract_summary){
+      h+=`<div class="ab-cmp">
+        <div class="ab-orig"><div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-bottom:6px;">ORIGINAL</div>${paper.abstract_orig}</div>
+        <div class="ab-ai"><div style="font-size:10px;color:var(--ai);font-family:IBM Plex Mono,monospace;margin-bottom:6px;">AI 정리본</div>${paper.abstract_summary}</div>
+      </div>`;
+    } else {
+      h+=`<div style="font-size:13px;color:var(--text2);line-height:1.8;">${paper.abstract_summary||paper.abstract_orig}</div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // 주요 발견, 합성 방법, 측정 방법
+  [{key:'findings',label:'🔍 주요 발견'},{key:'synthesis',label:'⚗️ 합성 방법'},{key:'methods',label:'📊 측정 방법'}].forEach(({key,label})=>{
+    if(paper[key]){
+      h+=`<div class="card" style="margin-bottom:12px;"><div class="ct">${label}</div>
+        <div style="white-space:pre-wrap;font-size:13px;color:var(--text2);line-height:1.85;background:var(--bg3);border-radius:7px;padding:13px;">${paper[key]}</div>
+      </div>`;
+    }
+  });
+
+  // 아직 미정리 항목 안내
+  const pending=['findings','synthesis','methods'].filter(k=>!paper[k]);
+  if(pending.length){
+    h+=`<div class="card" style="background:var(--bg3);"><div style="font-size:12px;color:var(--text3);">⬜ 미정리 항목: ${pending.map(k=>({findings:'주요 발견',synthesis:'합성 방법',methods:'측정 방법'}[k])).join(', ')} — 교수님이 정리 중입니다.</div></div>`;
+  }
+
+  // Claude.ai 학습 링크
+  const prompt='다음 논문에 대해 NCM811 배터리 양극재를 연구하는 대학원생 입장에서 설명해주세요.\n\n논문: "'+paper.title+'" ('+paper.journal+', '+paper.year+')\n측정 유형: '+(paper.measureTypes||[]).join(', ')+'\n\n1. 이 논문의 핵심 기여\n2. 측정 방법의 의미\n3. 우리 연구(결정질화도 89.2%, I(003)/(104)=1.38)에 어떻게 적용할 수 있는가?\n4. 집중해야 할 Figure/Table\n\n한국어로 설명해주세요.';
+  const enc=encodeURIComponent(prompt);
+  h+=`<div class="card" style="margin-top:14px;border-color:rgba(34,211,238,.2);">
+    <div class="ct">💬 이 논문 더 알아보기 (Claude.ai)</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">논문 내용을 더 깊이 이해하거나 실험 연관성을 분석하려면 Claude.ai를 활용하세요.</div>
+    <button class="btn btn-p btn-sm" data-enc="${enc}" onclick="openCAI(this.dataset.enc)">🚀 Claude.ai에서 학습하기</button>
+  </div>`;
+
+  mc.innerHTML=h;
+  document.getElementById('tbTitle').textContent='논문 정리본';
+}
+
+
+// ── PROF: PAPERS GALLERY
+function pgPapers(mc){
+  const cnt=id=>id==='ALL'?paperLib.length:paperLib.filter(p=>(p.measureTypes||[]).includes(id)).length;
+  const filtered=selMeasType==='ALL'?paperLib:paperLib.filter(p=>(p.measureTypes||[]).includes(selMeasType));
+  const sorted=[...filtered].sort((a,b)=>(b.relevanceScore||0)-(a.relevanceScore||0));
+
+  let h=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📄 논문 갤러리</h1><p style="font-size:13px;color:var(--text2);">측정 유형별 분류 · 연관성 순위 정렬</p></div>
+  <div class="card" style="margin-bottom:14px;"><div class="ct">🔬 측정 유형별 분류</div>
+  <div class="mg">
+    <div class="mc ${selMeasType==='ALL'?'on':''}" style="background:var(--bg3);" onclick="selMeas('ALL')">
+      <div style="font-size:22px;margin-bottom:4px;">📚</div><div style="font-size:12px;font-weight:700;">전체</div>
+      <div style="font-size:10px;color:var(--text2);">All</div>
+      <div class="mc-cnt" style="background:var(--prof);">${paperLib.length}</div>
+    </div>
+    ${MEAS.map(m=>{const c2=cnt(m.id);return `<div class="mc ${selMeasType===m.id?'on':''}" style="background:${m.color}18;border-color:${m.color}44;" onclick="selMeas('${m.id}')">
+      <div style="font-size:20px;margin-bottom:4px;">${m.icon}</div>
+      <div style="font-size:12px;font-weight:700;color:${m.color};">${m.label}</div>
+      <div style="font-size:10px;opacity:.7;">${m.desc}</div>
+      ${c2?`<div class="mc-cnt" style="background:${m.color};">${c2}</div>`:''}
+    </div>`;}).join('')}
+  </div></div>`;
+
+  h+=`<div class="card">`;
+  if(sorted.length===0){
+    h+=`<div style="text-align:center;padding:40px;"><div style="font-size:36px;">📭</div><div style="font-size:13px;color:var(--text2);margin-top:12px;">논문이 없습니다. 아래에서 PDF를 업로드하세요.</div></div>`;
+  }else{
+    h+=`<div class="ct">📑 논문 목록 (${sorted.length}편)</div><div class="pt-grid">`;
+    sorted.forEach((p,i)=>{
+      const rank=i+1;
+      const rc2=rank===1?'rnk1':rank===2?'rnk2':'rnkn';
+      const sc=p.relevanceScore||0;
+      h+=`<div class="pt" onclick="openPaper('${p.id}')">
+        <div class="pt-img">${(MEAS.find(m=>m.id===(p.measureTypes||[])[0])||{icon:'📄'}).icon}</div>
+        <div class="pt-ttl"><span class="${rc2}" style="margin-right:4px;">${rank<=3?rank:'#'+rank}</span>${p.title.slice(0,50)+(p.title.length>50?'...':'')}</div>
+        <div class="pt-meta">${p.journal} (${p.year})</div>
+        <div style="margin-top:5px;"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:2px;"><span>연관성</span><span style="color:var(--prof);">${sc}점</span></div>
+        <div style="background:var(--bg4);border-radius:3px;height:4px;overflow:hidden;"><div class="rbar" style="width:${Math.min(sc,100)}%"></div></div></div>
+        <div style="margin-top:4px;font-size:10px;color:${p.status==='완료'?'var(--ok)':p.status==='진행중'?'var(--warn)':'var(--text3)'};">${p.status==='완료'?'✅ 정리완료':p.status==='진행중'?'⏳ 검토중':'⬜ 미정리'}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+
+  // PDF 업로드
+  h+=`<div class="card" style="margin-top:14px;border-color:rgba(34,211,238,.2);">
+    <div class="ct">➕ 새 논문 PDF 업로드</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">PDF 업로드 후 Claude.ai를 통해 단계별로 정리됩니다.</div>
+    <div class="uz" id="pp-uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="ppDrop(event)" onclick="document.getElementById('pp-fi').click()">
+      <div style="font-size:28px;">📄</div><p style="font-size:13px;color:var(--text2);margin-top:6px;">논문 PDF 드래그 또는 클릭</p>
+    </div>
+    <input type="file" id="pp-fi" accept=".pdf" style="display:none" onchange="ppSel(this)">
+    <div id="pp-fi-info" style="margin-top:8px;"></div>
+    <div id="pp-meta" style="display:none;margin-top:14px;">
+      <div class="g2">
+        <div class="fg"><label class="fl2">논문 제목 *</label><input type="text" id="pp-title" placeholder="논문 제목..."></div>
+        <div class="fg"><label class="fl2">저널 *</label><input type="text" id="pp-journal" placeholder="Nature Energy"></div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label class="fl2">연도</label><input type="number" id="pp-year" placeholder="2026"></div>
+        <div class="fg"><label class="fl2">DOI</label><input type="text" id="pp-doi" placeholder="10.1038/..."></div>
+      </div>
+      <div class="fg"><label class="fl2">측정 유형 (해당 모두 선택)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+          ${MEAS.map(m=>`<label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;"><input type="checkbox" value="${m.id}" class="pp-mt" style="width:auto;margin:0;"> ${m.icon} ${m.label}</label>`).join('')}
+        </div>
+      </div>
+      <div class="fg"><label class="fl2">태그 (쉼표 구분)</label><input type="text" id="pp-tags" placeholder="NCM811, 결정구조"></div>
+      <button class="btn btn-p" onclick="regPaper()">📄 등록 & 정리 시작</button>
+    </div>
+  </div>`;
+
+  mc.innerHTML=h;
+}
+function selMeas(id){selMeasType=id;go('p-papers');}
+function ppDrop(e){e.preventDefault();document.getElementById('pp-uz').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')setPPFile(f);else alert('PDF만 가능합니다.');}
+function ppSel(inp){if(inp.files[0])setPPFile(inp.files[0]);inp.value='';}
+function setPPFile(f){
+  ppFile=f;
+  document.getElementById('pp-fi-info').innerHTML=`<div class="fchip" style="border-color:rgba(34,211,238,.3);">📄 ${f.name} (${(f.size/1024/1024).toFixed(1)}MB)<span class="fc-del" onclick="clearPPFile()">×</span></div>`;
+  document.getElementById('pp-meta').style.display='block';
+  document.getElementById('pp-title').value=f.name.replace('.pdf','').replace(/_/g,' ');
+}
+function clearPPFile(){ppFile=null;document.getElementById('pp-fi-info').innerHTML='';document.getElementById('pp-meta').style.display='none';}
+function openPaper(id){curPaperId=id;go('p-paper-detail');}
+
+function regPaper(){
+  const title=document.getElementById('pp-title').value.trim();
+  if(!title){alert('논문 제목을 입력해주세요.');return;}
+  if(!ppFile){alert('PDF를 먼저 업로드해주세요.');return;}
+  const mt=Array.from(document.querySelectorAll('.pp-mt:checked')).map(el=>el.value);
+  const np={
+    id:'p_'+Date.now(),title,
+    journal:document.getElementById('pp-journal').value||'',
+    year:parseInt(document.getElementById('pp-year').value)||new Date().getFullYear(),
+    doi:document.getElementById('pp-doi').value||'',
+    tags:document.getElementById('pp-tags').value.split(',').map(x=>x.trim()).filter(Boolean),
+    measureTypes:mt,pdfName:ppFile.name,pdfB64:null,
+    abstract_orig:'',abstract_summary:'',abstract_approved:false,
+    findings:'',synthesis:'',methods:'',
+    relevanceScore:0,uploadedAt:new Date().toLocaleDateString('ko-KR'),status:'미정리'
+  };
+  const reader=new FileReader();
+  reader.onload=function(e){
+    np.pdfB64=e.target.result.split(',')[1];
+    paperLib.push(np);savePLib();
+    curPaperId=np.id;ppFile=null;
+    alert('✅ 등록 완료! 논문 정리본으로 이동합니다.');
+    go('p-paper-detail');
+  };
+  reader.readAsDataURL(ppFile);
+}
+
+// ── PROF: PAPER DETAIL
+const RV_STEPS=[{id:'abstract',label:'Abstract',icon:'📝'},{id:'findings',label:'주요 발견',icon:'🔍'},{id:'synthesis',label:'합성 방법',icon:'⚗️'},{id:'methods',label:'측정 방법',icon:'📊'}];
+function pgPaperDetail(mc){
+  const paper=paperLib.find(p=>p.id===curPaperId);
+  if(!paper){mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📄 논문 정리본</h1></div><div class="card"><p style="color:var(--text2);">논문을 선택해주세요. <button class="btn btn-o btn-sm" onclick="go('p-papers')">← 갤러리</button></p></div>`;return;}
+  const mt=MEAS.find(m=>m.id===(paper.measureTypes||[])[0])||{color:'var(--prof)',icon:'📄'};
+  let h=`<div style="display:flex;gap:10px;margin-bottom:16px;"><button class="btn btn-o btn-sm" onclick="go('p-papers')">← 갤러리</button><div style="flex:1;font-size:13px;color:var(--text2);">논문 정리본</div><button class="btn btn-o btn-sm" onclick="delPaper('${paper.id}')">🗑️ 삭제</button></div>`;
+  // 헤더
+  h+=`<div style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:11px;padding:18px;margin-bottom:14px;">
+    <div style="display:flex;gap:12px;"><div style="width:42px;height:42px;border-radius:9px;background:${mt.color}22;border:1px solid ${mt.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${mt.icon}</div>
+    <div style="flex:1;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${paper.title}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">${paper.journal} (${paper.year})${paper.doi?` · <a href="https://doi.org/${paper.doi}" target="_blank" style="color:var(--ai);">DOI</a>`:''}</div>
+      <div style="margin-bottom:8px;">${(paper.measureTypes||[]).map(id=>{const m2=MEAS.find(x=>x.id===id)||{label:id,color:'var(--ai)'};return `<span style="font-size:10px;padding:2px 8px;border-radius:12px;background:${m2.color}20;color:${m2.color};border:1px solid ${m2.color}44;margin-right:4px;">${m2.label}</span>`;}).join('')}${paper.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:var(--text3);">연관성</span>
+        <div style="width:100px;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden;"><div class="rbar" style="width:${Math.min(paper.relevanceScore||0,100)}%"></div></div>
+        <span style="font-family:IBM Plex Mono,monospace;font-size:12px;color:var(--prof);">${paper.relevanceScore||0}점</span>
+        <button class="btn btn-o btn-sm" onclick="evalRel('${paper.id}')">🤖 연관성 평가</button>
+      </div>
+    </div></div>
+  </div>`;
+  // 스텝 진행
+  h+=`<div class="card" style="margin-bottom:14px;"><div class="rv-step">`;
+  RV_STEPS.forEach(s=>{
+    const done=s.id==='abstract'?paper.abstract_approved:!!paper[s.id];
+    h+=`<div class="rv-s ${done?'done':'pending'}">${s.icon} ${s.label}${done?' ✓':''}</div>`;
+  });
+  h+=`</div></div>`;
+  // 각 섹션
+  RV_STEPS.forEach(s=>{ h+=buildPaperSection(paper,s.id); });
+  // PDF
+  h+=`<div class="card" style="margin-top:14px;"><div class="ct">📎 원본 PDF</div>${paper.pdfName?`<div class="fchip" style="border-color:rgba(34,211,238,.3);">📄 ${paper.pdfName}</div>`:''}</div>`;
+  // 가이드라인
+  if((paper.relevanceScore||0)>=70) h+=buildRelGuide(paper);
+  mc.innerHTML=h;
+}
+
+function buildPaperSection(paper,type){
+  const labels={abstract:'📝 Abstract',findings:'🔍 주요 발견',synthesis:'⚗️ 합성 방법',methods:'📊 측정 방법'};
+  const prompts={
+    abstract:`논문 "${paper.title}" (${paper.journal}, ${paper.year})의 Abstract를 한국어로 정리해주세요.\n형식:\n【핵심 연구 목적】\n【주요 방법론】\n【핵심 결과 (수치 포함)】\n【의의 및 결론】\n\n⚠️ 원본과 다를 수 있으니 반드시 대조하여 검토해주세요.`,
+    findings:`논문 "${paper.title}"의 주요 발견을 정리해주세요.\n형식:\n【주요 발견 1】\n【주요 발견 2】\n【NCM811 연구 시사점】\n\n⚠️ 내용이 틀릴 수 있으니 검토 후 사용해주세요.`,
+    synthesis:`논문 "${paper.title}"의 합성 방법을 정리해주세요.\n형식:\n【시약 및 전구체】\n【합성 조건】\n【후처리】\n【핵심 변수】\n\n⚠️ 수치가 원본과 다를 수 있으니 반드시 검토해주세요.`,
+    methods:`논문 "${paper.title}"의 측정 방법을 정리해주세요.\n측정 유형: ${(paper.measureTypes||[]).join(', ')}\n형식:\n【측정 조건】\n【데이터 처리】\n\n⚠️ 장비 조건이 원본과 다를 수 있으니 검토해주세요.`
+  };
+  const isAbs=type==='abstract';
+  const isDone=isAbs?paper.abstract_approved:!!paper[type];
+  const content=isAbs?(paper.abstract_summary||''):(paper[type]||'');
+  const enc=encodeURIComponent(prompts[type]);
+  let h=`<div class="card" id="sec-${type}" style="margin-top:14px;"><div class="ct" style="${isDone?'color:var(--ok);':''}">${labels[type]}${isDone?' ✅':''}</div>`;
+  if(isAbs&&paper.abstract_orig){
+    h+=`<div class="ab-cmp">
+      <div class="ab-orig"><div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-bottom:6px;">ORIGINAL</div>${paper.abstract_orig}</div>
+      <div class="ab-ai"><div style="font-size:10px;color:var(--ai);font-family:IBM Plex Mono,monospace;margin-bottom:6px;">AI 정리본</div>${content||'<span style="color:var(--text3)">아직 정리되지 않았습니다.</span>'}</div>
+    </div>`;
+    if(!paper.abstract_approved){
+      h+=`<div style="display:flex;gap:7px;margin-bottom:10px;">
+        <button class="btn btn-g btn-sm" onclick="approveSec('${paper.id}','abstract')">✅ 동의 (채택)</button>
+        <button class="btn btn-o btn-sm" onclick="inputSec('${paper.id}','abstract')">✏️ 수정</button>
+      </div>`;
+    }
+  }else if(content){
+    h+=`<div style="white-space:pre-wrap;font-size:13px;color:var(--text2);line-height:1.85;background:var(--bg3);border-radius:7px;padding:13px;margin-bottom:10px;">${content}</div>
+    <button class="btn btn-o btn-sm" onclick="inputSec('${paper.id}','${type}')">✏️ 수정</button>`;
+  }else{
+    h+=`<div style="font-size:12px;color:var(--text3);padding:10px;background:var(--bg3);border-radius:7px;margin-bottom:10px;">아직 정리되지 않았습니다.</div>`;
+  }
+  if(!isDone){
+    h+=`<div style="margin-top:10px;padding:10px;background:var(--ai-g);border:1px solid rgba(34,211,238,.2);border-radius:7px;">
+      <div style="font-size:11px;color:var(--ai);margin-bottom:7px;">💬 Claude.ai로 정리하기</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-p btn-sm" data-enc="${enc}" data-pid="${paper.id}" data-type="${type}" onclick="openSecClaude(this.dataset.pid,this.dataset.type,this.dataset.enc)">🚀 Claude.ai 열기</button>
+        <button class="btn btn-o btn-sm" onclick="inputSec('${paper.id}','${type}')">✍️ 직접 입력</button>
+      </div>
+    </div>`;
+  }
+  h+=`<div id="input-area-${type}" style="display:none;margin-top:10px;">
+    <label class="fl2">내용 입력 (Claude.ai 응답 붙여넣기)</label>
+    <textarea id="input-txt-${type}" style="min-height:140px;" placeholder="Claude.ai 응답 붙여넣기..."></textarea>
+    ${isAbs?`<label class="fl2" style="margin-top:8px;">원본 Abstract (논문에서 복사)</label><textarea id="input-orig-${type}" style="min-height:70px;" placeholder="원문 Abstract..."></textarea>`:''}
+    <div style="display:flex;gap:7px;margin-top:8px;">
+      <button class="btn btn-p btn-sm" data-pid="${paper.id}" data-type="${type}" onclick="saveSec(this.dataset.pid,this.dataset.type)">💾 저장</button>
+      <button class="btn btn-o btn-sm" onclick="document.getElementById('input-area-${type}').style.display='none'">취소</button>
+    </div>
+  </div></div>`;
+  return h;
+}
+
+function openSecClaude(pid,type,enc){
+  const p=decodeURIComponent(enc);
+  navigator.clipboard.writeText(p).catch(()=>{});
+  window.open('https://claude.ai','_blank');
+  inputSec(pid,type);
+  alert('📋 프롬프트 복사!\n\n1. Claude.ai에서 붙여넣기\n2. 이 창에서 결과 붙여넣기\n\n⚠️ 내용이 틀릴 수 있으니 원본과 대조해주세요.');
+}
+function inputSec(pid,type){
+  const el=document.getElementById('input-area-'+type);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+function saveSec(pid,type){
+  const paper=paperLib.find(p=>p.id===pid);
+  if(!paper)return;
+  const txt=document.getElementById('input-txt-'+type)?.value.trim();
+  if(!txt){alert('내용을 입력해주세요.');return;}
+  if(type==='abstract'){
+    paper.abstract_summary=txt;
+    const orig=document.getElementById('input-orig-abstract')?.value.trim();
+    if(orig) paper.abstract_orig=orig;
+    paper.abstract_approved=false;
+  }else{
+    paper[type]=txt;
+  }
+  paper.status=(paper.abstract_approved&&paper.findings&&paper.synthesis&&paper.methods)?'완료':'진행중';
+  savePLib();
+  alert('✅ 저장!\n\n⚠️ 원본 논문과 반드시 대조해주세요.');
+  go('p-paper-detail');
+}
+function approveSec(pid,type){
+  const paper=paperLib.find(p=>p.id===pid);
+  if(!paper)return;
+  if(type==='abstract') paper.abstract_approved=true;
+  paper.status=(paper.abstract_approved&&paper.findings&&paper.synthesis&&paper.methods)?'완료':'진행중';
+  savePLib(); alert('✅ 채택!'); go('p-paper-detail');
+}
+function delPaper(){
+  if(!curPaperId||!confirm('삭제하시겠습니까?'))return;
+  paperLib=paperLib.filter(p=>p.id!==curPaperId);
+  savePLib(); curPaperId=null; go('p-papers');
+}
+function evalRel(pid){
+  const paper=paperLib.find(p=>p.id===pid);
+  if(!paper)return;
+  const prompt=`다음 논문이 NCM811 배터리 양극재 연구(결정질화도 최적화 목표)와 얼마나 연관성이 있는지 0-100점으로 평가해주세요.\n\n논문: ${paper.title}\n저널: ${paper.journal} (${paper.year})\n측정 유형: ${(paper.measureTypes||[]).join(', ')}\n\nJSON 형식으로만: {"score":85,"reason":"이유","priority":"높음/중간/낮음"}`;
+  navigator.clipboard.writeText(prompt).catch(()=>{});
+  window.open('https://claude.ai','_blank');
+  const s=prompt('Claude.ai 응답에서 score 값 입력 (0-100):');
+  if(s!==null){const n=parseInt(s);if(!isNaN(n)&&n>=0&&n<=100){paper.relevanceScore=n;savePLib();alert('✅ '+n+'점 업데이트!');go('p-paper-detail');}}
+}
+function buildRelGuide(paper){
+  return `<div class="gl-box"><div style="font-size:12px;font-weight:700;color:#f87171;margin-bottom:8px;">🔥 높은 연관성 — PDF 분석 가이드라인</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">연관성 점수 <strong style="color:#f87171;">${paper.relevanceScore}점</strong> — 다음 절차를 따라 심층 분석을 진행하세요:</div>
+    ${[
+      'PDF 논문 분석(🔍) 메뉴에서 이 논문을 업로드',
+      '이론 업데이트 또는 결과 비교 분석 유형 선택',
+      '분석 결과에서 현재 실험 조건과 다른 점 파악',
+      '📁 exper 파일 생성 → 실험 방법 페이지에 업로드',
+      '이론 편집 → AI 분석 → 변경사항 반영 → 버전 업',
+    ].map((s,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(248,113,113,.15);"><div style="width:18px;height:18px;border-radius:50%;background:#f87171;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;flex-shrink:0;">${i+1}</div><div style="font-size:12px;color:var(--text2);">${s}</div></div>`).join('')}
+    <button class="btn btn-sm" style="background:#f87171;color:#fff;margin-top:10px;" onclick="go('p-pdf')">→ PDF 분석으로 이동</button>
+  </div>`;
+}
+
+// ── PROF: PDF 분석
+function pgPDF(mc){
+  const typeOpts=[
+    {id:'theory_update',icon:'📚',label:'이론 업데이트',desc:'새 이론·수식 반영'},
+    {id:'exp_apply',    icon:'🧪',label:'실험 방법 적용',desc:'논문 조건 → 프로토콜'},
+    {id:'compare',      icon:'📊',label:'결과 비교',      desc:'논문 수치 vs 현재 데이터'},
+    {id:'poc_suggest',  icon:'💡',label:'POC 방향 제안',  desc:'차세대 연구 방향'},
+  ];
+  mc.innerHTML=`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">🔍 PDF 논문 분석</h1><p style="font-size:13px;color:var(--text2);">PDF 업로드 → Claude 전체 분석 (교수 전용)</p></div>
+<div class="card">
+  <div style="background:var(--ai-g);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:11px;margin-bottom:14px;font-size:12px;color:var(--text2);">💡 논문 PDF를 올리면 Claude가 전체를 읽고 <strong>현재 실험 목표값·이론과 연계</strong>하여 분석합니다.</div>
+  <div class="uz" id="pdf-uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="pdfDrop(event)" onclick="document.getElementById('pdf-fi').click()">
+    <div style="font-size:28px;">📄</div><p style="font-size:13px;color:var(--text2);margin-top:6px;">PDF 드래그 또는 클릭 (최대 3개, 32MB)</p>
+  </div>
+  <input type="file" id="pdf-fi" accept=".pdf" multiple style="display:none" onchange="pdfSel(this)">
+  <div id="pdf-queue" style="margin-top:8px;"></div>
+  <div style="margin-top:14px;"><label class="fl2">🎯 분석 목적</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;">
+      ${typeOpts.map(t=>`<div id="at-${t.id}" class="dtc-hd ${t.id===selAnalysisType?'on':''}" onclick="selAType('${t.id}')" style="border-radius:7px;border:1px solid ${t.id===selAnalysisType?'var(--prof)':'var(--border)'};background:${t.id===selAnalysisType?'var(--prof-g)':'var(--bg3)'};">
+        <div style="font-size:18px;">${t.icon}</div><div><div style="font-size:12px;font-weight:600;">${t.label}</div><div style="font-size:10px;color:var(--text2);">${t.desc}</div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="fg" style="margin-top:12px;"><label class="fl2">추가 질문 (선택)</label><textarea id="pdf-extra" rows="2" placeholder="예: Ti 도핑 조건 적용 가능성..."></textarea></div>
+  <button class="btn btn-p" style="background:linear-gradient(135deg,var(--ai),var(--prof));" onclick="runPDFAnalysis()">🤖 Claude로 분석 시작</button>
+</div>
+<div class="card" id="pdf-result" style="display:none;margin-top:14px;">
+  <div class="ai-box"><div class="ai-hd"><span class="sp" id="pdf-sp" style="display:none;"></span><span class="ai-lbl" id="pdf-lbl">AI PAPER ANALYSIS</span></div>
+  <div class="ai-body" id="pdf-txt" style="max-height:480px;overflow-y:auto;"></div></div>
+  <div style="margin-top:10px;display:flex;gap:7px;">
+    <button class="btn btn-p btn-sm" onclick="applyToTheory2()">📚 이론에 반영</button>
+    <button class="btn btn-o btn-sm" onclick="copyResult()">📋 복사</button>
+  </div>
+</div>
+${paperLib.length?`<div class="card" style="margin-top:14px;"><div class="ct">🗂️ 분석 이력 (논문 갤러리)</div>
+  <div class="tw"><table><tr><th>논문명</th><th>측정 유형</th><th>연관성</th><th>상태</th></tr>
+  ${paperLib.slice().sort((a,b)=>(b.relevanceScore||0)-(a.relevanceScore||0)).slice(0,5).map(p=>`<tr>
+    <td style="font-size:12px;max-width:180px;">${p.title.slice(0,40)}...</td>
+    <td>${(p.measureTypes||[]).map(id=>{const m=MEAS.find(x=>x.id===id)||{icon:'',label:id,color:'var(--ai)'};return `<span style="font-size:10px;color:${m.color};">${m.icon}${m.label}</span>`;}).join(' ')}</td>
+    <td style="font-family:IBM Plex Mono,monospace;font-size:11px;color:var(--prof);">${p.relevanceScore||0}점</td>
+    <td><button class="btn btn-o btn-sm" onclick="openPaper('${p.id}')">보기</button></td>
+  </tr>`).join('')}</table></div>
+</div>`:''}`;
+}
+
+const SYS_PDF={
+  theory_update:'신소재·전기화학 연구 전문가. 논문을 분석하여 NCM811 연구(결정질화도 89.2%, Li/Ni 3.1%)와 연계한 이론 업데이트 보고서를 한국어로 작성. 형식: ## 1.논문 핵심요약 ## 2.연관성 ## 3.새이론·수식 ## 4.목표값 영향 ## 5.즉시 적용 실험 변경 ## 6.중장기 방향',
+  exp_apply:'실험 전문가. 논문 실험 방법을 현재 NCM811 소성 프로토콜(850°C,12h,O₂)과 비교하여 개선 보고서 한국어 작성. 형식: ## 1.논문 실험조건 ## 2.비교 ## 3.권장 변경 ## 4.예상 효과 ## 5.계획',
+  compare:'데이터 분석 전문가. 논문 결과와 현재 데이터(결정질화도 89.2%, I(003)/(104)=1.38, 방전용량 187mAh/g) 비교 보고서 한국어 작성. 형식: ## 1.논문 주요 결과 ## 2.정량적 비교 ## 3.차이 원인 ## 4.평가 ## 5.개선 우선순위',
+  poc_suggest:'연구 전략 전문가. 논문 분석하여 차세대 POC 방향 제안서 한국어 작성. 형식: ## 1.핵심 혁신 ## 2.현재 연구 한계 해결 ## 3.POC 가설 ## 4.실험 설계 ## 5.성공 지표 ## 6.자원·기간'
+};
+
+function selAType(id){
+  selAnalysisType=id;
+  document.querySelectorAll('[id^="at-"]').forEach(el=>{
+    const isOn=el.id==='at-'+id;
+    el.style.border='1px solid '+(isOn?'var(--prof)':'var(--border)');
+    el.style.background=isOn?'var(--prof-g)':'var(--bg3)';
+  });
+}
+function pdfDrop(e){e.preventDefault();document.getElementById('pdf-uz').classList.remove('drag');addPDFs(Array.from(e.dataTransfer.files).filter(f=>f.type==='application/pdf'));}
+function pdfSel(inp){addPDFs(Array.from(inp.files));inp.value='';}
+function addPDFs(files){
+  for(const f of files){
+    if(f.size>32*1024*1024){alert(f.name+': 32MB 초과');continue;}
+    if(pdfQueue.length>=3){alert('최대 3개');break;}
+    if(!pdfQueue.find(x=>x.name===f.name)) pdfQueue.push(f);
+  }
+  renderPdfQ();
+}
+function renderPdfQ(){
+  const el=document.getElementById('pdf-queue');
+  if(!el)return;
+  el.innerHTML=pdfQueue.map((f,i)=>`<div class="fchip" style="border-color:rgba(34,211,238,.3);">📄 ${f.name} (${(f.size/1024/1024).toFixed(1)}MB)<span class="fc-del" onclick="rmPdf(${i})">×</span></div>`).join('');
+}
+function rmPdf(i){pdfQueue.splice(i,1);renderPdfQ();}
+async function runPDFAnalysis(){
+  if(!pdfQueue.length){alert('PDF를 먼저 올려주세요.');return;}
+  const rb=document.getElementById('pdf-result');
+  rb.style.display='block';
+  document.getElementById('pdf-sp').style.display='inline-block';
+  document.getElementById('pdf-txt').innerHTML='분석 중<span class="ldots"></span>';
+  document.getElementById('pdf-lbl').textContent=`분석 중 (${pdfQueue.length}개)...`;
+  const extra=document.getElementById('pdf-extra')?.value||'';
+  const sys=SYS_PDF[selAnalysisType]||SYS_PDF.theory_update;
+  const user=extra?`위 지침에 따라 분석하되 추가 질문: ${extra}`:'위 지침에 따라 분석해주세요.';
+  try{
+    const b64s=[];
+    for(const f of pdfQueue){
+      document.getElementById('pdf-txt').innerHTML=`"${f.name}" 변환 중<span class="ldots"></span>`;
+      b64s.push(await f2b64(f));
+    }
+    document.getElementById('pdf-txt').innerHTML='분석 중<span class="ldots"></span>';
+    const t=await callClaudePDF(sys,user,b64s,2500);
+    document.getElementById('pdf-sp').style.display='none';
+    document.getElementById('pdf-lbl').textContent='✅ 분석 완료';
+    document.getElementById('pdf-txt').innerHTML=fmtAI(t);
+  }catch(e){
+    document.getElementById('pdf-sp').style.display='none';
+    showAiErr('pdf-txt',e);
+  }
+}
+function applyToTheory2(){alert('분석 결과를 이론 페이지에 반영합니다.');go('p-theory');}
+function copyResult(){
+  const el=document.getElementById('pdf-txt');
+  if(!el)return;
+  navigator.clipboard.writeText(el.innerText).then(()=>alert('✅ 복사!')).catch(()=>alert('복사 실패'));
+}
+
+// ── PROF: METHOD
+function pgMethod(mc){
+  const hasNew=DB.methodPriorities.some(p=>p.isNew);
+  mc.innerHTML=`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">🧫 실험 방법 관리</h1></div>
+<div class="card" style="margin-bottom:14px;">
+  <div class="ct">📁 AI 분석 → 실험 우선순위 (exper 파일) ${hasNew?'<span class="new-badge">NEW</span>':''}</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">이론 페이지에서 생성된 <strong>exper_*.json</strong> 파일을 업로드하면 실험 우선순위가 업데이트됩니다.</div>
+  <div class="uz" style="padding:14px;" onclick="document.getElementById('exper-fi').click()"><span style="font-size:20px;">📁</span> <span style="font-size:12px;color:var(--text2);">exper_*.json 파일 업로드</span></div>
+  <input type="file" id="exper-fi" accept=".json" style="display:none" onchange="loadExper(this)">
+  <div class="ct" style="margin-top:14px;">📊 실험 프로세스 우선순위</div>
+  ${DB.methodPriorities.map(p=>`<div class="pri-row ${p.isNew?'isnew':''}">
+    <div class="pri-num">${p.rank}</div>
+    <div style="flex:1;"><div style="font-size:13px;font-weight:600;${p.isNew?'color:#ff4444;':''};">${p.task}${p.isNew?'<span class="new-badge">NEW</span>':''}</div>
+    <div style="font-size:11px;color:var(--text2);">${p.reason}</div></div>
+    <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${p.status==='진행중'?'var(--s1-g)':'var(--bg4)'};color:${p.status==='진행중'?'var(--ok)':'var(--text2)'};">${p.status}</span>
+  </div>`).join('')}
+</div>
+<div class="card">
+  <div class="ct">📋 현재 프로토콜</div>
+  <div class="fg"><label class="fl2">실험명</label><input type="text" value="NCM811 소성 최적화 v2.1"></div>
+  <div class="g2">
+    <div class="fg"><label class="fl2">주 시약</label><input type="text" value="Ni(OH)₂:Co(OH)₂:Mn(OH)₂ = 8:1:1"></div>
+    <div class="fg"><label class="fl2">기준량</label><input type="text" value="총 5g"></div>
+  </div>
+  <div class="g2">
+    <div class="fg"><label class="fl2">소성 온도 (°C)</label><input type="number" value="850"></div>
+    <div class="fg"><label class="fl2">소성 시간 (h)</label><input type="number" value="12"></div>
+  </div>
+  <div class="g2">
+    <div class="fg"><label class="fl2">분위기</label><select><option>O₂ (99.999%)</option><option>Air</option><option>N₂</option></select></div>
+    <div class="fg"><label class="fl2">승온 속도 (°C/min)</label><input type="number" value="5"></div>
+  </div>
+  <div class="fg"><label class="fl2">주의사항</label><textarea rows="3">1. 공 믹서 250rpm, 12h\n2. 소성 전 80°C 오버나이트 건조\n3. LiOH·H₂O Li/(Ni+Co+Mn)=1.05</textarea></div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-p" onclick="alert('✅ 저장!')">💾 저장</button>
+    <button class="btn btn-o" onclick="alert('📌 템플릿 저장!')">📌 템플릿</button>
+  </div>
+</div>`;
+}
+function loadExper(inp){
+  const f=inp.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!d.experimentPriorities){alert('올바른 exper 파일이 아닙니다.');return;}
+      DB.methodPriorities=d.experimentPriorities.map((p,i)=>({rank:p.rank||i+1,task:p.task||'실험'+(i+1),reason:p.reason||'',status:p.status||'대기',isNew:true}));
+      alert('✅ exper 적용!\n🔴 빨간색 = 새 항목');
+      go('p-method');
+    }catch(err){alert('파싱 오류: '+err.message);}
+  };
+  r.readAsText(f);
+  inp.value='';
+}
+
+// ── PROF: VERSIONS
+function pgVersions(mc){
+  const vers=[
+    {v:'v1.4',d:'2026-03-26',c:'Butler-Volmer 연계 추가',cur:true},
+    {v:'v1.3',d:'2026-03-24',c:'Jahn-Teller 분석. 결정질화도 목표 95% 상향'},
+    {v:'v1.2',d:'2026-03-15',c:'소성 온도 800→850°C'},
+    {v:'v1.1',d:'2026-03-01',c:'NCM811 이론 정립'},
+    {v:'v1.0',d:'2026-02-15',c:'프로젝트 시작'},
+  ];
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">🕒 버전 이력</h1></div>
+  <div class="card"><div class="ct">📋 버전 이력</div>
+  <div class="tl" style="padding-left:90px;">
+    ${vers.map(v=>`<div class="tl-item">
+      <div class="tl-dot ${v.cur?'on':''}"></div>
+      <div style="position:absolute;left:-90px;top:0;width:70px;text-align:right;">
+        <span style="font-family:IBM Plex Mono,monospace;font-size:10px;padding:2px 6px;border-radius:3px;background:${v.cur?'var(--prof-g)':'var(--bg4)'};color:${v.cur?'var(--prof)':'var(--text2)'};border:1px solid ${v.cur?'var(--prof)':'var(--border2)'};">${v.v}</span>
+      </div>
+      <div class="tl-d">${v.d}</div><div class="tl-s">${v.c}</div>
+      <div style="margin-top:4px;display:flex;gap:5px;">
+        <button class="btn btn-o btn-sm" onclick="alert('버전 ${v.v} 보기')">보기</button>
+        ${!v.cur?'<button class="btn btn-o btn-sm" onclick="alert(\'비교\')">비교</button>':''}
+      </div>
+    </div>`).join('')}
+  </div></div>`;
+}
+
+// ── PROF: ALERTS (학생 데이터 알림)
+function pgAlerts(mc){
+  if(!isProfessor()){mc.innerHTML='<div class="card"><p style="color:var(--err);">🔒 교수 전용 페이지입니다.</p></div>';return;}
+  profAlerts.forEach(a=>a.unread=false); saveProfAlerts(); refreshBadge();
+  const data=[...studentData].reverse();
+  mc.innerHTML=`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">🔔 학생 데이터 알림</h1>
+<p style="font-size:13px;color:var(--text2);">학생 업로드 확인 → 논문DB 비교 + CPS 연계 → 실험 방향 제시</p></div>
+<div class="card">
+  <div class="ct">📬 알림 (${profAlerts.length}건)</div>
+  ${profAlerts.length===0?'<div style="font-size:13px;color:var(--text3);padding:12px;text-align:center;">알림이 없습니다.</div>':
+  profAlerts.map(a=>`<div class="alert-card ${a.unread?'u':''}">
+    <div style="font-size:13px;font-weight:600;margin-bottom:2px;">${a.title}</div>
+    <div style="font-size:12px;color:var(--text2);">${a.sub}</div>
+    <div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-top:3px;">${a.time}</div>
+  </div>`).join('')}
+</div>
+<div class="card" style="margin-top:14px;">
+  <div class="ct">📊 학생 업로드 데이터 (분석 대기)</div>
+  ${data.length===0?'<div style="font-size:13px;color:var(--text3);padding:12px;text-align:center;">업로드된 데이터가 없습니다.</div>':
+  data.map(d=>{
+    const dtL=DATA_TYPES.filter(t=>d.types.includes(t.id)).map(t=>`<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${t.color}20;color:${t.color};margin-right:3px;">${t.icon}${t.label}</span>`).join('');
+    const interpH=Object.entries(d.interpretations||{}).filter(([k,v])=>v&&d.types.includes(k)).map(([k,v])=>`<div style="margin-bottom:4px;"><span style="color:var(--ai);font-size:10px;font-family:IBM Plex Mono,monospace;">${k}</span><div style="font-size:12px;color:var(--text2);">${v.slice(0,120)}${v.length>120?'...':''}</div></div>`).join('');
+    return `<div style="border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:12px;background:var(--bg3);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;">${d.title}</div>
+          <div style="font-size:11px;color:var(--text2);">${d.studentName} · ${d.date} · ${d.cond||''}</div>
+          <div style="margin-top:5px;">${dtL}</div>
+        </div>
+        <span class="badge ${d.status==='분석완료'?'bok':d.status==='검토중'?'bp':'bwn'}">${d.status}</span>
+      </div>
+      ${interpH?`<div style="background:var(--bg4);border-radius:7px;padding:10px;margin-bottom:10px;"><div style="font-size:10px;color:var(--warn);font-family:IBM Plex Mono,monospace;margin-bottom:5px;">📝 학생 해석/의문사항</div>${interpH}</div>`:''}
+      <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;color:var(--err);font-family:IBM Plex Mono,monospace;margin-bottom:7px;">🔒 교수 전용 — AI 비교 분석</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:9px;">논문 갤러리 우선 참조 → 추가 논문DB → CPS 연계 → 실험 방향 제시</div>
+        <div style="display:flex;gap:7px;">
+          <button class="btn btn-p btn-sm" data-did="${d.id}" onclick="runProfAnal(this.dataset.did)">🚀 Claude.ai 분석 시작</button>
+          <button class="btn btn-o btn-sm" data-did="${d.id}" onclick="writeFB(this.dataset.did)">✍️ 직접 작성</button>
+        </div>
+        <div id="pfb-${d.id}" style="display:none;margin-top:10px;">
+          <textarea id="pfb-txt-${d.id}" style="min-height:100px;" placeholder="분석 결과 및 실험 방향..."></textarea>
+          <div style="display:flex;gap:7px;margin-top:7px;">
+            <button class="btn btn-p btn-sm" data-did="${d.id}" onclick="savePFB(this.dataset.did)">💾 저장 & 학생 알림</button>
+            <button class="btn btn-o btn-sm" data-did="${d.id}" onclick="document.getElementById('pfb-'+this.dataset.did).style.display='none'">취소</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+</div>`;
+}
+
+function runProfAnal(did){
+  const d=studentData.find(x=>x.id===did);
+  if(!d)return;
+  const rp=paperLib.filter(p=>d.types.some(t=>(p.measureTypes||[]).includes(t))).sort((a,b)=>(b.relevanceScore||0)-(a.relevanceScore||0)).slice(0,5);
+  const pSum=rp.length?rp.map((p,i)=>`[${i+1}] ${p.title} (${p.journal}, ${p.year})${p.findings?' → '+p.findings.slice(0,80):''}${p.relevanceScore?' [연관성: '+p.relevanceScore+'점]':''}`).join('\n'):'(등록된 관련 논문 없음)';
+  const iText=Object.entries(d.interpretations||{}).filter(([k,v])=>v&&d.types.includes(k)).map(([k,v])=>`${k} 해석: ${v}`).join('\n');
+  const cps=DB.meetings[0]?.cps||'(CPS 없음)';
+  const prompt=`당신은 NCM811 배터리 양극재 연구 교수입니다.\n학생 데이터를 검토하고 논문DB와 비교 분석하여 실험 방향을 제시해주세요.\n\n═══ 학생 데이터 ═══\n학생: ${d.studentName}\n실험명: ${d.title}\n조건: ${d.cond||''}\n날짜: ${d.date}\n측정 유형: ${d.types.join(', ')}\n\n═══ 학생 해석/의문사항 ═══\n${iText||'(없음)'}\n\n═══ 논문 갤러리 (우선 참조) ═══\n${pSum}\n\n═══ 현재 연구 목표 ═══\n- 결정질화도 ≥95% (현재 89.2%)\n- I(003)/I(104) ≥1.4 (현재 1.38)\n- Li/Ni 혼합도 ≤2% (현재 3.1%)\n- 방전용량 ≥200 mAh/g (현재 187)\n\n═══ 현재 CPS ═══\n${cps}\n\n═══ 분석 요청 ═══\n1. 학생 해석 정확성 평가 (잘된 점/보완점)\n2. 논문 갤러리 데이터와 비교 (수치 직접 비교)\n   - 갤러리 논문 없는 부분은 검색 권장 사항 제시\n3. CPS와의 연계성\n4. 다음 실험 우선순위 3가지 (구체적 조건)\n5. 학생에게 전달할 핵심 피드백 (2~3문장)\n\n한국어, 수치와 이론적 근거 포함`;
+  navigator.clipboard.writeText(prompt).catch(()=>{});
+  window.open('https://claude.ai','_blank');
+  document.getElementById('pfb-'+did).style.display='block';
+  alert(`📋 분석 프롬프트 복사!\n\nClaude.ai에서 붙여넣기 후 분석 결과를 아래에 입력하세요.\n\n※ 논문 갤러리 ${rp.length}편 포함됨.`);
+}
+function writeFB(did){
+  const el=document.getElementById('pfb-'+did);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+function savePFB(did){
+  const txt=document.getElementById('pfb-txt-'+did)?.value.trim();
+  if(!txt){alert('내용을 입력해주세요.');return;}
+  const d=studentData.find(x=>x.id===did);
+  if(d){
+    d.profAnalysis=txt;d.status='분석완료';
+    saveStudentData();
+    NOTIFS.unshift({title:'📊 교수 분석 완료: '+d.title,sub:'Prof. Lee가 분석 및 실험 방향을 제시했습니다.',time:'방금',unread:true});
+    alert('✅ 저장! '+d.studentName+'에게 알림 전송됨.');
+    go('p-alerts');
+  }
+}
+
+// ── STUDENT: UPLOAD
+function pgUpload(mc){
+  const myData=studentData.filter(d=>d.student===CU.id);
+  const myMeth=expMethods.filter(m=>m.student===CU.id);
+  const histH=myData.length?`<div class="card" style="margin-top:14px;"><div class="ct">🗂️ 내 업로드 이력</div>
+    <div class="tw"><table><tr><th>날짜</th><th>실험명</th><th>유형</th><th>상태</th><th>교수 분석</th></tr>
+    ${myData.slice().reverse().map(d=>`<tr>
+      <td style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text3);">${d.date}</td>
+      <td style="font-size:12px;">${d.title}</td>
+      <td>${DATA_TYPES.filter(t=>d.types.includes(t.id)).map(t=>`<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${t.color}20;color:${t.color};">${t.icon}${t.label}</span>`).join(' ')}</td>
+      <td><span class="badge ${d.status==='분석완료'?'bok':d.status==='검토중'?'bp':'bwn'}">${d.status}</span></td>
+      <td>${d.profAnalysis?`<button class="btn btn-o btn-sm" data-did="${d.id}" onclick="viewPA(this.dataset.did)">보기</button>`:'<span style="font-size:11px;color:var(--text3);">대기중</span>'}</td>
+    </tr>`).join('')}
+    </table></div></div>`:'';
+
+  mc.innerHTML=`
+<div class="ph"><h1 style="font-size:21px;font-weight:700;">📤 실험기록 & 데이터 업로드</h1>
+<p style="font-size:13px;color:var(--text2);">${CU.name}</p></div>
+<div class="ts-hd2">
+  <button class="ts2-btn ${uploadTab==='method'?'on':''}" onclick="switchTab('method')">📝 TAB 1: 실험 방법</button>
+  <button class="ts2-btn ${uploadTab==='data'?'on':''}" onclick="switchTab('data')">📊 TAB 2: 데이터 업로드</button>
+</div>
+
+<!-- TAB 1 -->
+<div id="tab-method" style="display:${uploadTab==='method'?'block':'none'};">
+  <div class="card">
+    <div class="ct">📝 실험 방법 기록</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7;">실험노트 PDF·사진을 올리면 <strong style="color:var(--ai);">Claude.ai</strong>로 텍스트 변환됩니다.<br>기존 프로토콜과 달라진 부분은 <span style="color:#ff4444;font-weight:700;">빨간색</span>으로 표시됩니다.</div>
+    <div class="uz" id="meth-uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="methDrop(event)" onclick="document.getElementById('meth-fi').click()">
+      <div style="font-size:28px;">📷</div><p style="font-size:13px;color:var(--text2);margin-top:6px;">실험노트 PDF·사진 드래그 또는 클릭</p>
+      <p style="font-size:11px;color:var(--text3);margin-top:3px;">.pdf · .jpg · .png · .heic</p>
+    </div>
+    <input type="file" id="meth-fi" accept=".pdf,.jpg,.jpeg,.png,.heic" style="display:none" onchange="methSel(this)">
+    <div id="meth-fi-info" style="margin-top:8px;"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-p" onclick="convMethod()">🤖 Claude.ai로 텍스트 변환</button>
+      <button class="btn btn-o" onclick="showDiff()">🔴 기존 프로토콜과 비교</button>
+    </div>
+  </div>
+  <div id="meth-result" style="display:none;margin-top:14px;">
+    <div class="card">
+      <div class="ct">📄 변환 결과</div>
+      <div id="meth-converted" style="font-size:13px;line-height:1.85;"></div>
+      <div id="meth-diff" style="display:none;margin-top:14px;"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn btn-g" onclick="saveMeth()">💾 저장</button>
+        <button class="btn btn-o" onclick="inputMeth()">✏️ 직접 입력</button>
+      </div>
+    </div>
+  </div>
+  <div id="meth-input-area" style="display:none;margin-top:14px;">
+    <div class="card"><div class="ct">✍️ 직접 입력</div>
+      <label class="fl2">Claude.ai 변환 결과 붙여넣기</label>
+      <textarea id="meth-input-txt" style="min-height:180px;" placeholder="Claude.ai 응답 붙여넣기..."></textarea>
+      <div style="display:flex;gap:7px;margin-top:8px;">
+        <button class="btn btn-p btn-sm" onclick="applyMeth()">적용</button>
+        <button class="btn btn-o btn-sm" onclick="document.getElementById('meth-input-area').style.display='none'">취소</button>
+      </div>
+    </div>
+  </div>
+  ${myMeth.length?`<div class="card" style="margin-top:14px;"><div class="ct">📋 실험방법 이력</div>
+    <div class="tw"><table><tr><th>날짜</th><th>제목</th><th>변경사항</th></tr>
+    ${myMeth.slice().reverse().slice(0,5).map(m=>`<tr>
+      <td style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text3);">${m.date}</td>
+      <td style="font-size:12px;">${m.title}</td>
+      <td style="font-size:11px;color:${m.hasChanges?'#ff4444':'var(--text3)'};">${m.hasChanges?'🔴 변경사항 있음':'변경없음'}</td>
+    </tr>`).join('')}
+    </table></div></div>`:''}
+</div>
+
+<!-- TAB 2 -->
+<div id="tab-data" style="display:${uploadTab==='data'?'block':'none'};">
+  <div class="card">
+    <div class="ct">📊 실험 기본 정보</div>
+    <div class="g2">
+      <div class="fg"><label class="fl2">실험 제목 *</label><input type="text" id="exp-title" placeholder="NCM811 875°C XRD 분석"></div>
+      <div class="fg"><label class="fl2">날짜 *</label><input type="date" id="exp-date" value="${new Date().toISOString().split('T')[0]}"></div>
+    </div>
+    <div class="fg"><label class="fl2">실험 조건 요약</label><input type="text" id="exp-cond" placeholder="875°C, 12h, O₂"></div>
+  </div>
+  <div style="margin-top:14px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">📁 측정 데이터 업로드 <span style="font-size:11px;font-weight:400;color:var(--text2);">(해당하는 항목만)</span></div>
+    ${DATA_TYPES.map(dt=>{
+      const files=dataFiles[dt.id]||[];
+      const interp=dataInterp[dt.id]||'';
+      return `<div class="dtc" id="dtc-${dt.id}">
+        <div class="dtc-hd" onclick="togDtC('${dt.id}')" style="background:${files.length?dt.color+'10':'var(--bg2)'};">
+          <div style="width:34px;height:34px;border-radius:8px;background:${dt.color}20;border:1px solid ${dt.color}44;display:flex;align-items:center;justify-content:center;font-size:18px;">${dt.icon}</div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:${dt.color};">${dt.label}</div><div style="font-size:10px;color:var(--text3);">${dt.fmt}</div></div>
+          <span style="font-size:11px;color:${files.length?'var(--ok)':'var(--text3)'};">${files.length?'✅ '+files.length+'개':'미업로드'}</span>
+        </div>
+        <div class="dtc-body" id="dtb-${dt.id}">
+          <div style="background:var(--ai-g);border:1px solid rgba(34,211,238,.15);border-radius:7px;padding:9px;margin-bottom:9px;font-size:12px;">
+            <span style="color:var(--ai);font-family:IBM Plex Mono,monospace;font-size:10px;">📋 FILE FORMAT GUIDE</span>
+            <div style="margin-top:4px;color:var(--text2);">${dt.guide}</div>
+            <div style="margin-top:5px;">${dt.fmt.split('·').map(f=>`<span class="fmt-badge">${f.trim()}</span>`).join('')}</div>
+          </div>
+          <div class="uz" style="padding:14px;" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" data-id="${dt.id}" ondrop="dtDrop(event,this.dataset.id)" onclick="document.getElementById('dfi-${dt.id}').click()">
+            <div style="font-size:22px;">${dt.icon}</div><p style="font-size:12px;color:var(--text2);">${dt.label} 파일 업로드</p>
+          </div>
+          <input type="file" id="dfi-${dt.id}" multiple style="display:none" data-id="${dt.id}" onchange="dtSel(this,this.dataset.id)">
+          <div id="dfl-${dt.id}" style="margin-top:8px;">${files.map((f,i)=>`<div class="fchip" style="border-color:${dt.color}44;">${dt.icon} ${f.name||f} <span class="fc-del" data-id="${dt.id}" data-i="${i}" onclick="rmDtFile(this.dataset.id,this.dataset.i)">×</span></div>`).join('')}</div>
+          <div style="margin-top:11px;">
+            <label class="fl2" style="color:${dt.color};">📝 ${dt.label} 데이터 해석 및 의문사항</label>
+            <textarea id="interp-${dt.id}" style="min-height:80px;" placeholder="측정 결과 해석, 의문사항...">${interp}</textarea>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="card" style="margin-top:14px;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.7;">저장 후 <strong style="color:var(--prof);">Prof. Lee</strong>에게 알림이 자동 발송됩니다.</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-g" onclick="submitData()">✅ 저장 & 교수 알림 발송</button>
+      <button class="btn btn-o" onclick="saveDraft()">💾 임시저장</button>
+    </div>
+  </div>
+  ${histH}
+</div>`;
+}
+
+function switchTab(t){uploadTab=t;go('s-upload');}
+function viewPA(did){const d=studentData.find(x=>x.id===did);if(d?.profAnalysis) alert('📊 교수 분석:\n\n'+d.profAnalysis);}
+
+// 실험방법 TAB1
+function methDrop(e){e.preventDefault();document.getElementById('meth-uz').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)setMethFile(f);}
+function methSel(inp){if(inp.files[0])setMethFile(inp.files[0]);inp.value='';}
+function setMethFile(f){
+  methodFile=f;
+  document.getElementById('meth-fi-info').innerHTML=`<div class="fchip" style="border-color:rgba(34,211,238,.3);">📄 ${f.name}<span class="fc-del" onclick="clearMethFile()">×</span></div>`;
+}
+function clearMethFile(){methodFile=null;document.getElementById('meth-fi-info').innerHTML='';}
+function convMethod(){
+  if(!methodFile){alert('파일을 먼저 올려주세요.');return;}
+  const prompt='다음 실험노트 이미지/PDF를 보고 실험 방법을 텍스트로 정리해주세요.\n\n형식:\n【시약 및 재료】\n【합성 조건 (온도/시간/분위기/비율)】\n【실험 절차】 (번호 매겨서)\n【특이사항】\n\nNCM811 배터리 양극재 연구입니다. 화학식과 수치는 정확히 기재해주세요.\n⚠️ 불명확한 부분은 [확인필요]로 표시해주세요.';
+  navigator.clipboard.writeText(prompt).catch(()=>{});
+  window.open('https://claude.ai','_blank');
+  document.getElementById('meth-result').style.display='block';
+  document.getElementById('meth-converted').innerHTML=`<div style="font-size:12px;color:var(--text2);padding:11px;background:var(--bg3);border-radius:7px;">📋 프롬프트 복사됨!<br><br>1. Claude.ai 탭에서 파일 첨부 후 붙여넣기<br>2. 응답 받은 후 <strong>직접 입력</strong> 버튼 클릭하여 붙여넣기</div>`;
+  inputMeth();
+}
+function inputMeth(){
+  const el=document.getElementById('meth-input-area');
+  if(el) el.style.display='block';
+}
+function applyMeth(){
+  const txt=document.getElementById('meth-input-txt')?.value.trim();
+  if(!txt){alert('내용을 입력해주세요.');return;}
+  const el=document.getElementById('meth-converted');
+  el.innerHTML=`<div style="white-space:pre-wrap;font-size:13px;line-height:1.85;background:var(--bg3);border-radius:7px;padding:13px;">${txt}</div>`;
+  el.dataset.text=txt;
+  document.getElementById('meth-input-area').style.display='none';
+}
+function showDiff(){
+  const el=document.getElementById('meth-converted');
+  const newTxt=el?.dataset?.text||document.getElementById('meth-input-txt')?.value||'';
+  if(!newTxt){alert('먼저 텍스트 변환을 완료해주세요.');return;}
+  const base='1. Ni(OH)₂:Co(OH)₂:Mn(OH)₂ = 8:1:1\n2. LiOH·H₂O Li/(Ni+Co+Mn) = 1.05\n3. 공 믹서 250rpm, 12h\n4. 80°C 오버나이트 건조\n5. 소성: 850°C, 12h, O₂\n6. 승온: 5°C/min\n7. 자연 냉각';
+  const bLines=base.split('\n');
+  const nLines=newTxt.split('\n').slice(0,20);
+  let diffH='';
+  nLines.forEach((line,i)=>{
+    const bl=bLines[i]||'';
+    if(!bl){diffH+=`<div class="diff-new">+ ${line}</div>`;}
+    else if(line.trim()===bl.trim()){diffH+=`<div class="diff-same">${line}</div>`;}
+    else{
+      const bW=bl.split(/\s+/);
+      diffH+='<div>';
+      line.split(/\s+/).forEach(w=>{diffH+=bW.includes(w)?`<span class="diff-same">${w}</span> `:`<span class="diff-new">${w}</span> `;});
+      diffH+='</div>';
+    }
+  });
+  const diffEl=document.getElementById('meth-diff');
+  diffEl.style.display='block';
+  diffEl.innerHTML=`<div style="font-size:13px;font-weight:600;margin-bottom:10px;">🔴 기존 프로토콜 대비 변경사항</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-bottom:5px;">기존 (BASE)</div>
+        <div style="white-space:pre-wrap;font-size:12px;background:var(--bg3);border-radius:7px;padding:11px;">${base}</div></div>
+      <div><div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;margin-bottom:5px;">이번 실험 <span style="color:#ff4444;">🔴 변경사항</span></div>
+        <div style="font-size:12px;background:var(--bg3);border-radius:7px;padding:11px;">${diffH}</div></div>
+    </div>`;
+}
+function saveMeth(){
+  const el=document.getElementById('meth-converted');
+  const txt=el?.dataset?.text||'';
+  const hasDiff=document.getElementById('meth-diff')?.style.display!=='none';
+  expMethods.push({id:'m'+Date.now(),student:CU.id,title:'실험방법 '+new Date().toLocaleDateString('ko-KR'),text:txt,date:new Date().toISOString().split('T')[0],hasChanges:hasDiff,pdfName:methodFile?.name||''});
+  saveExpMethods();
+  methodFile=null;
+  document.getElementById('meth-fi-info').innerHTML='';
+  document.getElementById('meth-result').style.display='none';
+  alert('✅ 저장!');
+  go('s-upload');
+}
+
+// 데이터 TAB2
+function togDtC(id){const el=document.getElementById('dtb-'+id);if(el)el.classList.toggle('open');}
+function dtDrop(e,id){e.preventDefault();e.currentTarget.classList.remove('drag');addDtFiles(id,Array.from(e.dataTransfer.files));}
+function dtSel(inp,id){addDtFiles(id,Array.from(inp.files));inp.value='';}
+function addDtFiles(id,files){
+  if(!dataFiles[id]) dataFiles[id]=[];
+  files.forEach(f=>{if(!dataFiles[id].find(x=>(x.name||x)===f.name))dataFiles[id].push(f);});
+  renderDtList(id);
+}
+function renderDtList(id){
+  const dt=DATA_TYPES.find(t=>t.id===id);
+  const el=document.getElementById('dfl-'+id);
+  if(!el||!dt)return;
+  el.innerHTML=(dataFiles[id]||[]).map((f,i)=>`<div class="fchip" style="border-color:${dt.color}44;">${dt.icon} ${f.name||f} <span class="fc-del" data-id="${id}" data-i="${i}" onclick="rmDtFile(this.dataset.id,this.dataset.i)">×</span></div>`).join('');
+}
+function rmDtFile(id,i){if(dataFiles[id]){dataFiles[id].splice(i,1);renderDtList(id);}}
+function submitData(){
+  const title=document.getElementById('exp-title')?.value.trim();
+  const date=document.getElementById('exp-date')?.value||new Date().toISOString().split('T')[0];
+  const cond=document.getElementById('exp-cond')?.value||'';
+  if(!title){alert('실험 제목을 입력해주세요.');return;}
+  const types=DATA_TYPES.filter(dt=>(dataFiles[dt.id]||[]).length>0).map(dt=>dt.id);
+  if(!types.length){alert('최소 1개 데이터를 업로드해주세요.');return;}
+  DATA_TYPES.forEach(dt=>{const el=document.getElementById('interp-'+dt.id);if(el&&el.value)dataInterp[dt.id]=el.value;});
+  const entry={
+    id:'sd'+Date.now(),student:CU.id,studentName:CU.name,title,date,cond,types,
+    files:types.flatMap(tid=>(dataFiles[tid]||[]).map(f=>({name:f.name||f,size:f.size||0,ft:tid}))),
+    interpretations:{...dataInterp},status:'업로드완료',profAnalysis:null,
+    uploadedAt:new Date().toLocaleString('ko-KR')
+  };
+  studentData.push(entry);saveStudentData();
+  addProfAlert('📊 새 데이터 업로드: '+CU.name, title+' · 유형: '+types.join(', ')+' · '+date);
+  dataFiles={};dataInterp={};
+  alert('✅ 업로드 완료!\nProf. Lee에게 알림이 발송되었습니다.');
+  go('s-upload');
+}
+function saveDraft(){
+  DATA_TYPES.forEach(dt=>{const el=document.getElementById('interp-'+dt.id);if(el)dataInterp[dt.id]=el.value;});
+  alert('💾 임시저장 완료!');
+}
+
+// ── STUDENT: ANALYSIS
+function pgAnalysis(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📈 데이터 분석</h1></div>
+<div class="card"><div class="ct">📊 XRD 파라미터 비교</div>
+  <div class="bc">
+    ${[['800°C','70','var(--s2)','1.28'],['850°C','81','var(--ok)','1.38'],['목표','82','var(--prof)','≥1.4']].map(([l,p,c,v])=>`<div class="bc-row"><div class="bc-lbl">${l}</div><div class="bc-w"><div class="bc-b" style="width:${p}%;background:${c};${l==='목표'?'opacity:.35;':''}"></div></div><div class="bc-v">${v}</div></div>`).join('')}
+  </div>
+  <div style="font-size:10px;color:var(--text3);margin-top:5px;font-family:IBM Plex Mono,monospace;">I(003)/I(104) 비율 · 층상 구조 완성도</div>
+</div>
+<div class="card"><div class="ct">🔍 AI 데이터 해석 (Claude.ai)</div>
+  <div class="fg"><label class="fl2">측정 데이터 입력</label>
+    <textarea id="obs-data" rows="5" placeholder="예:\n2θ=18.65° → (003) 피크\n2θ=44.21° → (104) 피크\nI(003)/I(104) = 1.38\na=2.8712Å, c=14.208Å"></textarea>
+  </div>
+  <button class="btn btn-g" onclick="aiData()">🤖 AI 데이터 해석 요청</button>
+</div>
+<div id="ai-data-box" class="card" style="display:none;margin-top:14px;">
+  <div id="ai-data-txt"></div>
+  <button class="btn btn-o btn-sm" style="margin-top:10px;" onclick="go('feedback')">📤 교수에게 보고</button>
+</div>`;
+}
+function aiData(){
+  const obs=document.getElementById('obs-data').value||'(데이터 없음)';
+  document.getElementById('ai-data-box').style.display='block';
+  const prompt=`NCM811 배터리 양극재 연구에서 측정된 다음 실험 데이터를 해석해주세요.\n\n연구 목표: 결정질화도≥95%, I(003)/I(104)≥1.4, c/a=4.93~4.97, Li/Ni≤2%\n\n측정 데이터:\n${obs}\n\n1. 각 수치의 물리적 의미 (이론/수식 포함)\n2. 목표값 대비 현재 상태 평가\n3. 개선을 위한 구체적 실험 방향\n4. 다음 실험에서 추가 확인 사항\n\n한국어로 상세하게 작성해주세요.`;
+  showClaudeLink('ai-data-txt',prompt,'실험 데이터 AI 해석');
+}
+
+// ── STUDENT: GUIDE
+function pgGuide(mc){
+  const steps=[
+    {n:1,t:'피크 동정',done:true,d:'JCPDS 카드 #09-0063 대조. 불순물 피크 확인'},
+    {n:2,t:'격자 파라미터',done:true,d:'Bragg: nλ=2d·sinθ → d-spacing → a, c'},
+    {n:3,t:'I(003)/I(104) 비율',done:false,d:'목표 ≥1.2. <1.2이면 Li/Ni 혼합 의심'},
+    {n:4,t:'Rietveld Refinement',done:false,d:'FullProf로 Li/Ni 점유율. Rwp<10% 목표'},
+    {n:5,t:'결정자 크기',done:false,d:'Scherrer: D=Kλ/(β·cosθ), K=0.9'},
+  ];
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📋 분석 가이드라인</h1></div>
+<div class="card"><div class="ct">🔬 XRD 분석 가이드</div>
+  ${steps.map(s=>`<div style="display:flex;gap:11px;padding:10px;background:${s.done?'var(--s1-g)':'var(--bg3)'};border-radius:7px;margin-bottom:7px;border:1px solid ${s.done?'rgba(52,211,153,.2)':'var(--border)'};">
+    <div style="width:22px;height:22px;border-radius:50%;background:${s.done?'var(--ok)':'var(--bg4)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:${s.done?'#0b0d12':'var(--text2)'};">${s.done?'✓':s.n}</div>
+    <div><div style="font-size:12px;font-weight:600;">${s.t}</div><div style="font-size:11px;color:var(--text2);">${s.d}</div></div>
+  </div>`).join('')}
+  <div class="formula">Scherrer: D = Kλ / (β·cosθ)<br>Bragg: nλ = 2d · sinθ</div>
+</div>
+<div class="card"><div class="ct">⚡ EIS 등가 회로</div>
+  <div class="formula">Randles: Rs + (Rct // Cdl) + Zw<br>D_Li = 0.5·(RT/AF²·C·σ)²</div>
+</div>`;
+}
+
+// ── STUDENT: WEEKLY PAPER
+function pgWeekly(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📰 주간 논문 추천</h1><p style="font-size:13px;color:var(--text2);">AI가 현재 실험에 맞는 논문 1편을 추천합니다.</p></div>
+<div class="card"><div class="ct">🤖 이번 주 논문 추천</div>
+  <div class="fg"><label class="fl2">관심 분야</label><select id="wp-topic">
+    <option value="xrd">XRD / 결정 구조</option><option value="eis">EIS / 임피던스</option>
+    <option value="doping">도핑 전략</option><option value="ncm">NCM811 전반</option><option value="synthesis">소성 합성</option>
+  </select></div>
+  <button class="btn btn-p" onclick="getWeekly()">📰 추천받기</button>
+</div>
+<div id="wp-result" style="display:none;margin-top:14px;"></div>`;
+}
+function getWeekly(){
+  const topic=document.getElementById('wp-topic').value;
+  const names={xrd:'XRD/결정구조',eis:'EIS/임피던스',doping:'도핑전략',ncm:'NCM811',synthesis:'소성합성'};
+  document.getElementById('wp-result').style.display='block';
+  const prompt=`NCM811 배터리 양극재 연구를 하는 대학원생에게 이번 주 읽어야 할 논문 1편을 추천해주세요.\n\n현재 실험: 결정질화도 89.2%, I(003)/(104)=1.38, Li/Ni 3.1%\n관심 분야: ${names[topic]}\n\n다음 내용을 포함해 추천해주세요:\n1. 논문 제목, 저자, 저널, 연도, DOI\n2. 이 논문을 읽어야 하는 이유\n3. 핵심 포인트 3가지\n4. 읽는 순서 및 집중할 섹션`;
+  showClaudeLink('wp-result',prompt,'이번 주 추천 논문');
+}
+
+// ── FEEDBACK
+function pgFeedback(mc){
+  let h=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">💬 피드백 & 협업</h1></div>`;
+  DB.feedbacks.forEach(fb=>{
+    h+=`<div class="card" style="margin-bottom:13px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;">
+        <div class="fb-av" style="background:var(--prof);color:#fff;">교</div>
+        <div><div style="font-size:13px;font-weight:600;">${fb.from} · <span style="font-size:10px;color:var(--text2);font-family:IBM Plex Mono,monospace;">${fb.target}</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;">${fb.date}</div></div>
+        <span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:10px;font-family:IBM Plex Mono,monospace;background:${fb.status==='open'?'rgba(251,191,36,.1)':fb.status==='review'?'var(--prof-g)':'rgba(52,211,153,.1)'};color:${fb.status==='open'?'var(--warn)':fb.status==='review'?'var(--prof)':'var(--ok)'};">${fb.status==='open'?'미처리':fb.status==='review'?'검토중':'완료'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);padding:11px;background:var(--bg3);border-radius:7px;margin-bottom:12px;">${fb.comment}</div>`;
+    if(fb.replies.length){
+      h+='<div style="border-left:2px solid var(--border);padding-left:12px;margin-left:12px;">';
+      fb.replies.forEach(r=>{
+        h+=`<div style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <div class="fb-av" style="background:var(--ok);color:#0b0d12;">학</div>
+          <span style="font-size:12px;font-weight:500;">${r.from}</span>
+          <span style="font-size:10px;color:var(--text3);font-family:IBM Plex Mono,monospace;">${r.date}</span>
+        </div><div style="font-size:13px;color:var(--text2);">${r.comment}</div></div>`;
+      });
+      h+='</div>';
+    }
+    h+=`<div style="display:flex;gap:7px;margin-top:10px;">
+      <textarea id="rep-${fb.id}" placeholder="회신..." style="flex:1;min-height:55px;"></textarea>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <button class="btn btn-p btn-sm" data-id="${fb.id}" onclick="replyFB(this.dataset.id)">📤 회신</button>
+        <button class="btn btn-o btn-sm" data-id="${fb.id}" data-q="${fb.comment.replace(/"/g,'&quot;').replace(/\n/g,' ')}" onclick="aiReply(this.dataset.id,this.dataset.q)">🤖 AI</button>
+      </div>
+    </div>
+    <div id="ai-rep-${fb.id}" style="display:none;margin-top:9px;"></div></div>`;
+  });
+  h+=`<div class="card"><div class="ct">➕ 새 피드백</div>
+    <div class="fg"><label class="fl2">대상 실험</label><select>${DB.exps.map(e=>`<option>${e.id} - ${e.title}</option>`).join('')}</select></div>
+    <div class="fg"><label class="fl2">내용</label><textarea id="new-fb" rows="3" placeholder="피드백..."></textarea></div>
+    <button class="btn btn-p" onclick="submitFB()">💬 등록</button>
+  </div>`;
+  mc.innerHTML=h;
+}
+function replyFB(id){
+  const txt=document.getElementById('rep-'+id)?.value;
+  if(!txt){alert('내용 입력');return;}
+  const fb=DB.feedbacks.find(f=>f.id===id);
+  if(fb){fb.replies.push({from:CU.name,comment:txt,date:'2026-03-26'});}
+  go('feedback');
+}
+function submitFB(){
+  const c2=document.getElementById('new-fb')?.value;
+  if(!c2){alert('내용 입력');return;}
+  DB.feedbacks.push({id:'fb'+Date.now(),from:CU.name,target:'exp003',status:'open',comment:c2,date:'2026-03-26',replies:[]});
+  go('feedback');
+}
+function aiReply(id,q){
+  document.getElementById('ai-rep-'+id).style.display='block';
+  const prompt=`NCM811 연구실에서 교수님으로부터 다음 피드백을 받았습니다.\n\n교수 피드백: "${q}"\n\n이 피드백에 대해 전문적으로 답변하는 초안을 한국어로 작성해주세요.`;
+  showClaudeLink('ai-rep-'+id,prompt,'교수 피드백 답변 초안');
+}
+
+// ── MEETING: REC
+function pgRec(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">🎙️ 회의 녹음</h1></div>
+<div class="card" style="text-align:center;padding:36px;">
+  <div id="rec-status" style="font-size:13px;color:var(--text2);margin-bottom:18px;">녹음 대기 중</div>
+  <button class="rec-btn idle" id="rec-btn" onclick="toggleRec()">🎙️</button>
+  <div id="rec-timer" style="font-size:30px;font-family:IBM Plex Mono,monospace;margin:14px 0;">00:00</div>
+  <div class="waveform" id="waveform" style="opacity:0;transition:opacity .3s;">
+    ${Array(14).fill(0).map((_,i)=>`<div class="wbar" style="animation-delay:${(i*0.09).toFixed(2)}s"></div>`).join('')}
+  </div>
+</div>
+<div class="card"><div class="ct">📋 회의 정보</div>
+  <div class="g2">
+    <div class="fg"><label class="fl2">제목</label><input type="text" id="mtg-title" value="주간 미팅 #13"></div>
+    <div class="fg"><label class="fl2">날짜</label><input type="date" value="2026-03-26"></div>
+  </div>
+  <div class="fg"><label class="fl2">참석자</label><input type="text" value="Prof. Lee, stud1, stud2"></div>
+  <div style="display:flex;gap:7px;margin-top:4px;">
+    <button class="btn btn-o" onclick="go('m-stt')">📝 STT 변환으로</button>
+    <button class="btn btn-o" onclick="loadDemo()">🔃 데모 로드</button>
+  </div>
+</div>`;
+}
+function initRec(){recState='idle';recSec=0;}
+function toggleRec(){
+  if(recState==='idle'){
+    recState='recording';
+    document.getElementById('rec-btn').className='rec-btn rec';
+    document.getElementById('rec-status').textContent='🔴 녹음 중...';
+    document.getElementById('waveform').style.opacity='1';
+    recTimer=setInterval(()=>{recSec++;const m=String(Math.floor(recSec/60)).padStart(2,'0'),s=String(recSec%60).padStart(2,'0');document.getElementById('rec-timer').textContent=m+':'+s;},1000);
+  }else{
+    clearInterval(recTimer);recState='idle';
+    document.getElementById('rec-btn').className='rec-btn idle';
+    document.getElementById('rec-status').textContent='✅ 녹음 완료 ('+document.getElementById('rec-timer').textContent+')';
+    document.getElementById('waveform').style.opacity='0';
+  }
+}
+function loadDemo(){document.getElementById('rec-timer').textContent='52:30';document.getElementById('rec-status').textContent='✅ 데모 로드';}
+
+// ── MEETING: STT
+function pgSTT(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📝 STT 변환</h1></div>
+<div class="card"><div class="ct">🎵 녹음 파일</div>
+  <div class="uz" onclick="alert('녹음 파일 업로드 (.mp3 .wav .m4a)')"><div style="font-size:28px;">🎵</div><p style="font-size:13px;color:var(--text2);margin-top:6px;">녹음 파일 업로드</p></div>
+  <button class="btn btn-v" style="margin-top:11px;" onclick="runSTT(this)">▶ STT 변환 시작</button>
+</div>
+<div class="card" id="stt-result" style="display:none;"><div class="ct">📄 변환 결과</div>
+  <div style="background:var(--bg3);border-radius:7px;padding:13px;font-size:12px;line-height:1.9;max-height:300px;overflow-y:auto;">
+    ${DB.meetings[0].transcript.split('\n').map(line=>{const isP=line.startsWith('교수');return `<div style="margin-bottom:5px;"><span style="font-size:10px;font-weight:700;color:${isP?'var(--prof)':'var(--ok)'};font-family:IBM Plex Mono,monospace;">${isP?'[교수]':'[학생]'}</span> ${line.replace(/^[^:]+:/,'')}</div>`;}).join('')}
+  </div>
+  <div style="margin-top:10px;display:flex;gap:7px;">
+    <button class="btn btn-o btn-sm" onclick="alert('수동 수정')">✏️ 수정</button>
+    <button class="btn btn-v btn-sm" onclick="go('m-summary')">→ AI 요약</button>
+  </div>
+</div>`;
+}
+function runSTT(btn){const el=document.getElementById('stt-result');btn.textContent='변환 중...';setTimeout(()=>{el.style.display='block';btn.textContent='▶ STT 변환 시작';},1800);}
+
+// ── MEETING: SUMMARY
+function pgSummary(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">🤖 AI 회의 요약</h1></div>
+<div class="card"><div class="ct">📄 STT 텍스트</div>
+  <textarea id="stt-input" rows="5">${DB.meetings[0].transcript}</textarea>
+  <button class="btn btn-v" style="margin-top:10px;" onclick="aiSummary()">🤖 AI 요약 생성</button>
+</div>
+<div id="summ-box" class="card" style="display:none;margin-top:14px;">
+  <div id="summ-txt"></div>
+  <button class="btn btn-v btn-sm" style="margin-top:10px;" onclick="go('m-docs')">→ CPS/PRD 생성</button>
+</div>`;
+}
+function aiSummary(){
+  const inp=document.getElementById('stt-input').value||'(없음)';
+  document.getElementById('summ-box').style.display='block';
+  const prompt=`다음 연구실 미팅 녹취록을 구조화하여 요약해주세요.\n형식: 1.주요 논의 2.실험 결과(수치) 3.결정 사항 4.Action Items(담당자/마감) 5.기술 이슈\n\n녹취록:\n${inp}`;
+  showClaudeLink('summ-txt',prompt,'회의록 AI 요약');
+}
+
+// ── MEETING: DOCS
+function pgDocs(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📃 문서 생성 (CPS/PRD)</h1></div>
+<div class="g2">
+  <div class="card"><div class="ct" style="color:var(--meet);">📋 CPS 생성</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:11px;">Current State · Problem · Solution</p>
+    <div class="fg"><label class="fl2">회의</label><select><option>주간 미팅 #13 (2026-03-26)</option><option>주간 미팅 #12 (2026-03-19)</option></select></div>
+    <button class="btn btn-v" onclick="genCPS()">🤖 CPS 생성</button>
+  </div>
+  <div class="card"><div class="ct" style="color:var(--admin);">📑 PRD 생성</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:11px;">Product Requirements Document</p>
+    <div class="fg"><label class="fl2">유형</label><select><option>연구 방향 정의</option><option>실험 프로토콜</option></select></div>
+    <button class="btn btn-r" onclick="genPRD()">🤖 PRD 생성</button>
+  </div>
+</div>
+<div class="card" id="doc-box" style="display:none;margin-top:14px;">
+  <div class="ct" id="doc-title">문서</div>
+  <div style="background:var(--bg3);border-radius:7px;padding:15px;font-size:13px;line-height:1.8;max-height:400px;overflow-y:auto;" id="doc-content"></div>
+  <div style="margin-top:10px;display:flex;gap:7px;">
+    <button class="btn btn-o btn-sm" onclick="alert('다운로드')">⬇️ 다운로드</button>
+    <button class="btn btn-o btn-sm" onclick="alert('공유')">📤 공유</button>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;"><div class="ct">🗂️ 문서 이력</div>
+  <div class="tw"><table><tr><th>유형</th><th>제목</th><th>날짜</th><th>상태</th><th></th></tr>
+    <tr><td><span class="badge bm">CPS</span></td><td>주간 미팅 #12</td><td>2026-03-19</td><td><span class="badge bok">완료</span></td>
+    <td><button class="btn btn-o btn-sm" onclick="showCPS12()">보기</button></td></tr>
+  </table></div>
+</div>`;
+}
+function genCPS(){
+  document.getElementById('doc-box').style.display='block';
+  document.getElementById('doc-title').textContent='💬 CPS 생성 (Claude.ai)';
+  const prompt=`NCM811 배터리 양극재 연구실 주간 미팅(2026-03-26) 결과를 CPS 형식으로 한국어 작성.\n미팅: XRD I(003)/(104)=1.38(목표≥1.4 미달), 결정질화도 89.2%, Li/Ni 3.1%, 875°C 추가 결정\n\n형식: # CPS #13 / ## Current State / ## Problem / ## Solution / ## Next Steps / ## 담당자·일정`;
+  showClaudeLink('doc-content',prompt,'CPS 문서 생성');
+}
+function genPRD(){
+  document.getElementById('doc-box').style.display='block';
+  document.getElementById('doc-title').textContent='💬 PRD 생성 (Claude.ai)';
+  const prompt=`NCM811 연구 PRD 작성. 현재: 결정질화도 89.2%, I(003)/(104)=1.38. 다음: 875/900°C 추가, Ti/Mg 도핑 검토\n\n형식: # PRD / ## 1.연구목표 / ## 2.요구사항 / ## 3.실험계획 / ## 4.성공지표 / ## 5.일정 / ## 6.리스크`;
+  showClaudeLink('doc-content',prompt,'PRD 문서 생성');
+}
+function showCPS12(){
+  document.getElementById('doc-box').style.display='block';
+  document.getElementById('doc-title').textContent='📋 CPS #12';
+  document.getElementById('doc-content').innerHTML=DB.meetings[0].cps.replace(/\n/g,'<br>');
+}
+
+// ── MEETING: HISTORY
+function pgHistory(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">🗂️ 회의 이력</h1></div>
+${DB.meetings.map(m=>`<div class="card">
+  <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+    <div><div style="font-size:14px;font-weight:600;">${m.title}</div>
+    <div style="font-size:11px;color:var(--text2);">${m.date} · ${m.dur} · ${m.participants.join(', ')}</div></div>
+    <span class="badge bok">${m.status}</span>
+  </div>
+  <div style="font-size:12px;color:var(--text2);background:var(--bg3);border-radius:7px;padding:11px;margin-bottom:9px;">${m.summary.replace(/\n/g,'<br>')}</div>
+  <div style="display:flex;gap:7px;">
+    <button class="btn btn-o btn-sm" onclick="alert('녹취록 보기')">📄 녹취록</button>
+    <button class="btn btn-o btn-sm" onclick="showCPS12()">📋 CPS</button>
+    <button class="btn btn-o btn-sm" onclick="go('feedback')">💬 피드백</button>
+  </div>
+</div>`).join('')}`;
+}
+
+// ── ADMIN: MONITOR
+function pgMonitor(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">📡 프로젝트 현황</h1></div>
+<div class="g3" style="margin-bottom:14px;">
+  <div class="stat"><div class="sv" style="color:var(--prof);">v1.3</div><div class="sl">이론 버전</div><div class="sd up">2026-03-24</div></div>
+  <div class="stat"><div class="sv" style="color:var(--ok);">3</div><div class="sl">실험 데이터</div><div class="sd up">+2 이번 주</div></div>
+  <div class="stat"><div class="sv" style="color:var(--meet);">12</div><div class="sl">누적 회의</div></div>
+</div>
+<div class="card"><div class="ct">🔭 모듈별 진행 상태</div>
+  ${[['교수 · 이론',78,'var(--prof)','v1.3'],['학생1 · 실험',62,'var(--ok)','XRD 완료'],['학생2 · 실험',45,'var(--s2)','EIS 해석 중'],['회의 · 문서화',85,'var(--meet)','CPS 12회'],['피드백',55,'var(--ai)','미처리 2건']].map(([l,p,c,d])=>`<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;">${l}</span><span style="font-size:11px;color:${c};font-family:IBM Plex Mono,monospace;">${p}% · ${d}</span></div><div class="pbar-w"><div class="pbar" style="width:${p}%;background:${c};"></div></div></div>`).join('')}
+</div>
+<div class="card" style="margin-top:14px;"><div class="ct">⚠️ 경고</div>
+  ${[['🔴','미처리 피드백 2건'],['🟡','stud2 업로드 3일 없음'],['🟢','CPS #12 확인 완료']].map(([ic,msg])=>`<div style="display:flex;align-items:center;gap:9px;padding:9px;border-bottom:1px solid var(--border);"><span>${ic}</span><span style="font-size:12px;color:var(--text2);">${msg}</span></div>`).join('')}
+</div>`;
+}
+
+// ── ADMIN: ACTIVITY
+function pgActivity(mc){
+  const acts=[
+    {user:'stud1',a:'CV 업로드',d:'CV_cycle50.xlsx',t:'2026-03-25 14:30',r:'bs1'},
+    {user:'Prof. Lee',a:'이론 v1.3',d:'Jahn-Teller 추가',t:'2026-03-24 10:00',r:'bp'},
+    {user:'stud2',a:'EIS 업로드',d:'EIS_1M.xlsx',t:'2026-03-22 15:00',r:'bs2'},
+    {user:'stud1',a:'XRD 업로드',d:'NCM811_850C.opju',t:'2026-03-20 09:30',r:'bs1'},
+  ];
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">👁️ 활동 모니터링</h1></div>
+<div class="card"><div class="ct">📋 활동 로그</div><div class="tw"><table>
+  <tr><th>사용자</th><th>활동</th><th>세부</th><th>시간</th></tr>
+  ${acts.map(a=>`<tr><td><span class="badge ${a.r}">${a.user}</span></td><td style="font-size:12px;">${a.a}</td><td style="font-size:11px;color:var(--text2);">${a.d}</td><td style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text3);">${a.t}</td></tr>`).join('')}
+</table></div></div>
+<div class="card" style="margin-top:14px;"><div class="ct">📊 기여도</div><div class="bc">
+  ${[['Prof. Lee',75,'var(--prof)','15회'],['stud1',60,'var(--ok)','12회'],['stud2',35,'var(--s2)','7회']].map(([n,p,c,v])=>`<div class="bc-row"><div class="bc-lbl">${n}</div><div class="bc-w"><div class="bc-b" style="width:${p}%;background:${c};"></div></div><div class="bc-v">${v}</div></div>`).join('')}
+</div></div>`;
+}
+
+// ── ADMIN: POC
+function pgPOC(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">💡 POC 관리</h1></div>
+<div class="card"><div class="ct">🤖 AI POC 생성 (Claude.ai)</div>
+  <div class="fg"><label class="fl2">POC 초점</label><select id="poc-focus">
+    <option>결정 구조 최적화</option><option>도핑 전략</option><option>전해질 인터페이스</option><option>스케일업</option>
+  </select></div>
+  <button class="btn btn-r" onclick="genPOC()">💡 POC 생성</button>
+</div>
+<div id="poc-box" class="card" style="display:none;margin-top:14px;"><div id="poc-txt"></div></div>
+<div style="margin-top:14px;">
+  ${DB.poc.map(p=>`<div class="poc-card">
+    <div style="display:flex;justify-content:space-between;margin-bottom:7px;"><div style="font-size:14px;font-weight:600;">${p.title}</div><span class="badge bwn">${p.status}</span></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:9px;">${p.content}</div>
+    <div style="display:flex;gap:6px;"><button class="btn btn-o btn-sm">✏️ 수정</button><button class="btn btn-o btn-sm" onclick="go('feedback')">💬 피드백</button></div>
+  </div>`).join('')}
+</div>`;
+}
+function genPOC(){
+  const focus=document.getElementById('poc-focus').value;
+  document.getElementById('poc-box').style.display='block';
+  const prompt=`NCM811 양극재 연구 데이터(결정질화도 89.2%, I(003)/(104)=1.38, Li/Ni 3.1%, 방전용량 187mAh/g) 기반으로 "${focus}" POC 제안서 작성.\n\n## 1.현황분석(이론/수식) ## 2.핵심가설 ## 3.실험방법 ## 4.예상결과·성공지표 ## 5.자원·일정 ## 6.리스크`;
+  showClaudeLink('poc-txt',prompt,'POC 제안서 생성');
+}
+
+// ── ADMIN: ACCOUNTS
+function pgAccounts(mc){
+  const accs=getAccts();
+  const rl={professor:'🎓 교수',student1:'🧪 학생1',student2:'🔬 학생2',student3:'💡 학생3',meeting:'📹 회의',admin:'⚙️ Admin'};
+  const rc={professor:'bp',student1:'bs1',student2:'bs2',student3:'bai',meeting:'bm',admin:'ba'};
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">👥 계정 관리</h1></div>
+<div class="card"><div class="ct">📋 전체 계정</div><div class="tw"><table>
+  <tr><th>아이디</th><th>이름</th><th>역할</th><th>비밀번호 초기화</th></tr>
+  ${accs.map(a=>`<tr>
+    <td style="font-family:IBM Plex Mono,monospace;color:var(--ai);font-size:12px;">${a.id}</td>
+    <td style="font-size:12px;">${a.name}</td>
+    <td><span class="badge ${rc[a.role]||'bp'}">${rl[a.role]||a.role}</span></td>
+    <td><div style="display:flex;gap:5px;align-items:center;">
+      <input type="text" id="npw-${a.id}" placeholder="새 비밀번호" style="width:120px;padding:4px 8px;font-size:11px;">
+      <button class="btn btn-o btn-sm" data-id="${a.id}" onclick="adminReset(this.dataset.id)">초기화</button>
+    </div></td>
+  </tr>`).join('')}
+</table></div></div>`;
+}
+function adminReset(id){
+  const pw=document.getElementById('npw-'+id)?.value.trim();
+  if(!pw||pw.length<4){alert('4자 이상 입력');return;}
+  const accs=getAccts();const a=accs.find(x=>x.id===id);
+  if(a){a.pw=pw;saveAccts(accs);alert('✅ '+a.name+' 비밀번호 변경!');}
+  document.getElementById('npw-'+id).value='';
+}
+
+// ── SETTINGS
+function pgSettings(mc){
+  mc.innerHTML=`<div class="ph"><h1 style="font-size:21px;font-weight:700;">⚙️ 계정 설정</h1><p style="font-size:13px;color:var(--text2);">현재: <strong style="color:${CU.color};">${CU.name}</strong> (${CU.id})</p></div>
+<div class="card" style="max-width:460px;"><div class="ct">🔑 비밀번호 변경</div>
+  <div class="fg"><label class="fl2">현재 비밀번호</label><input type="password" id="pw-cur"></div>
+  <div class="fg"><label class="fl2">새 비밀번호</label><input type="password" id="pw-new" placeholder="4자 이상"></div>
+  <div class="fg"><label class="fl2">확인</label><input type="password" id="pw-cf"></div>
+  <div id="pw-msg" style="font-size:12px;min-height:16px;margin-bottom:8px;"></div>
+  <button class="btn btn-p" onclick="changePW()">💾 변경</button>
+</div>
+<div class="card" style="max-width:460px;margin-top:14px;"><div class="ct">👤 내 정보</div>
+  <table style="font-size:12px;">
+    <tr><td style="color:var(--text2);padding:5px 0;width:100px;">아이디</td><td style="font-family:IBM Plex Mono,monospace;color:var(--ai);">${CU.id}</td></tr>
+    <tr><td style="color:var(--text2);padding:5px 0;">이름</td><td>${CU.name}</td></tr>
+    <tr><td style="color:var(--text2);padding:5px 0;">역할</td><td><span class="badge bp">${CU.label}</span></td></tr>
+  </table>
+</div>`;
+}
+function changePW(){
+  const cur=document.getElementById('pw-cur').value,nw=document.getElementById('pw-new').value,cf=document.getElementById('pw-cf').value;
+  const msg=document.getElementById('pw-msg');
+  const accs=getAccts();const acc=accs.find(a=>a.id===CU.id);
+  if(!acc||acc.pw!==cur){msg.style.color='var(--err)';msg.textContent='❌ 현재 비밀번호 틀림';return;}
+  if(nw.length<4){msg.style.color='var(--err)';msg.textContent='❌ 4자 이상';return;}
+  if(nw!==cf){msg.style.color='var(--err)';msg.textContent='❌ 불일치';return;}
+  acc.pw=nw;saveAccts(accs);
+  msg.style.color='var(--ok)';msg.textContent='✅ 변경 완료!';
+  ['pw-cur','pw-new','pw-cf'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+window.addEventListener('load',function(){
+  const k=localStorage.getItem('ls_apikey');
+  if(k){
+    const el=document.getElementById('aKeySt');
+    if(el)el.innerHTML='<span style="color:var(--ok)">✓ 저장됨 ('+k.slice(0,12)+'...)</span>';
+    API_KEY=k;
+  }
+  getAccts();
+});
+</script>
+</body>
+</html>
